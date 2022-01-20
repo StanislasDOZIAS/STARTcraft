@@ -14,9 +14,12 @@ public:
 
     // helper functions to get you started with bot programming and learn the API
     void sendIdleWorkersToMinerals();
+	void sendWorkersToGaz(BWAPI::Unit);
     void trainAdditionalWorkers();
     void buildAdditionalSupply();
     void drawDebugInformation();
+	bool buildBuilding(BWAPI::UnitType building);
+	void buildTechBuilding();
 
     // functions that are triggered by various BWAPI events from main.cpp
 	void onStart();

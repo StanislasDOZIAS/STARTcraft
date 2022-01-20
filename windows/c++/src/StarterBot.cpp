@@ -7,11 +7,23 @@ StarterBot::StarterBot()
     
 }
 
+// 0 : The building isn't here
+// 1 : The building is constructing
+// 2 : The builindg is constructed
+
+int got_Spawning_pool = 0;
+int got_Extractor = 0;
+int got_Lair = 0;
+int got_Hydra_Den = 0;
+int got_Evolution_Chamber = 0;
+int got_Queens_Nest = 0;
+
+
 // Called when the bot starts!
 void StarterBot::onStart()
 {
     // Set our BWAPI options here    
-	BWAPI::Broodwar->setLocalSpeed(10);
+	BWAPI::Broodwar->setLocalSpeed(5);
     BWAPI::Broodwar->setFrameSkip(0);
     
     // Enable the flag that tells BWAPI top let users enter input while bot plays
@@ -42,6 +54,10 @@ void StarterBot::onFrame()
     // Build more supply if we are going to run out soon
     buildAdditionalSupply();
 
+    // Build Tech building
+
+    buildTechBuilding();
+
     // Draw unit health bars, which brood war unfortunately does not do
     Tools::DrawUnitHealthBars();
 
@@ -65,6 +81,21 @@ void StarterBot::sendIdleWorkersToMinerals()
 
             // If a valid mineral was found, right click it with the unit in order to start harvesting
             if (closestMineral) { unit->rightClick(closestMineral); }
+        }
+    }
+}
+
+void StarterBot::sendWorkersToGaz(BWAPI::Unit Extractor)
+{
+    const BWAPI::Unitset& myUnits = BWAPI::Broodwar->self()->getUnits();
+    int c = 0;
+    for (auto& unit : myUnits)
+    {
+        // Check the unit type, if it is an idle worker, then we want to send it somewhere
+        if (unit->getType().isWorker()&&c<3)
+        {
+        unit->rightClick(Extractor);
+        c += 1;
         }
     }
 }
@@ -93,17 +124,69 @@ void StarterBot::buildAdditionalSupply()
     const int unusedSupply = Tools::GetTotalSupply(true) - BWAPI::Broodwar->self()->supplyUsed();
 
     // If we have a sufficient amount of supply, we don't need to do anything
+
     if (unusedSupply >= 2) { return; }
-
     // Otherwise, we are going to build a supply provider
-    const BWAPI::UnitType supplyProviderType = BWAPI::Broodwar->self()->getRace().getSupplyProvider();
 
-    const bool startedBuilding = Tools::BuildBuilding(supplyProviderType);
-    if (startedBuilding)
-    {
-        BWAPI::Broodwar->printf("Started Building %s", supplyProviderType.getName().c_str());
+    // For Zerg player the supply providers come from larva
+
+    bool ovie_making = false;
+    for (BWAPI::Unit u : BWAPI::Broodwar->self()->getUnits()) {
+        if (u->getType() == BWAPI::UnitTypes::Zerg_Egg && u->getBuildType() == BWAPI::UnitTypes::Zerg_Overlord) {
+            ovie_making = true;
+        }
+    }
+    for (BWAPI::Unit u : BWAPI::Broodwar->self()->getUnits()) {
+        if (u->getType() == BWAPI::UnitTypes::Zerg_Larva && u->canTrain(BWAPI::UnitTypes::Zerg_Overlord) && ovie_making == false) {
+            u->train(BWAPI::UnitTypes::Zerg_Overlord);
+            ovie_making = true;
+        }
     }
 }
+
+
+bool StarterBot::buildBuilding(BWAPI::UnitType building)
+{
+    BWAPI::UnitType builderType = building.whatBuilds().first;
+    BWAPI::Unit builder = Tools::GetUnitOfType(builderType);
+
+    BWAPI::TilePosition desiredPos = BWAPI::Broodwar->self()->getStartLocation();
+
+    int maxBuildRange = 64;
+    bool buildOnCreep = building.requiresCreep();
+    BWAPI::TilePosition buildPos = BWAPI::Broodwar->getBuildLocation(building, desiredPos, maxBuildRange, buildOnCreep);
+    return builder->build(building, buildPos);
+}
+
+
+void StarterBot::buildTechBuilding()
+{
+     // We will follow the following Tech tree Building :
+     // Spawning pool, Vespin geyser extractor -> Lair,Hydralisk's Den,Evolution Chamber -> Queen's Nest
+
+
+    if ((got_Spawning_pool == 0) && (BWAPI::Broodwar->self()->minerals()>=200) && buildBuilding(BWAPI::UnitTypes::Zerg_Spawning_Pool)) {
+            got_Spawning_pool = 1;
+    }
+
+    if ((got_Spawning_pool>0) && (got_Extractor==0) && (BWAPI::Broodwar->self()->minerals() >= 100) && buildBuilding(BWAPI::UnitTypes::Zerg_Extractor)){
+        got_Extractor = 1;
+    }
+
+    if ((got_Spawning_pool==2) && (BWAPI::Broodwar->self()->minerals() >= 150) && (BWAPI::Broodwar->self()->gas() >= 100) &&(got_Lair==0)) {
+        for (BWAPI::Unit u : BWAPI::Broodwar->self()->getUnits()) {
+            if (u->getType() == BWAPI::UnitTypes::Zerg_Hatchery) {
+                u->morph(BWAPI::UnitTypes::Zerg_Lair);
+                if (Tools::GetUnitOfType(BWAPI::UnitTypes::Zerg_Lair) != nullptr) {
+                    got_Lair = 1;
+                }
+            }
+        }
+    }
+}
+
+
+
 
 // Draw some relevent information to the screen to help us debug the bot
 void StarterBot::drawDebugInformation()
@@ -146,7 +229,16 @@ void StarterBot::onUnitCreate(BWAPI::Unit unit)
 // Called whenever a unit finished construction, with a pointer to the unit
 void StarterBot::onUnitComplete(BWAPI::Unit unit)
 {
-	
+    if (unit->getType() == BWAPI::UnitTypes::Zerg_Spawning_Pool) {
+        sendWorkersToGaz(unit);
+        got_Spawning_pool = 2;
+    }
+
+    if (unit->getType() == BWAPI::UnitTypes::Zerg_Extractor) {
+        sendWorkersToGaz(unit);
+        got_Extractor = 2;
+    }
+    
 }
 
 // Called whenever a unit appears, with a pointer to the destroyed unit
