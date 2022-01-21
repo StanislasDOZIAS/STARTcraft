@@ -41,6 +41,22 @@ BWAPI::Unit Tools::GetUnitOfType(BWAPI::UnitType type)
     for (auto& unit : BWAPI::Broodwar->self()->getUnits())
     {
         // if the unit is of the correct type, and it actually has been constructed, return it
+        if (unit->getType() == type)
+        {
+            return unit;
+        }
+    }
+
+    // If we didn't find a valid unit to return, make sure we return nullptr
+    return nullptr;
+}
+
+BWAPI::Unit Tools::GetCompleteUnitOfType(BWAPI::UnitType type)
+{
+    // For each unit that we own
+    for (auto& unit : BWAPI::Broodwar->self()->getUnits())
+    {
+        // if the unit is of the correct type, and it actually has been constructed, return it
         if (unit->getType() == type && unit->isCompleted())
         {
             return unit;
@@ -50,6 +66,7 @@ BWAPI::Unit Tools::GetUnitOfType(BWAPI::UnitType type)
     // If we didn't find a valid unit to return, make sure we return nullptr
     return nullptr;
 }
+
 
 BWAPI::Unit Tools::GetDepot()
 {

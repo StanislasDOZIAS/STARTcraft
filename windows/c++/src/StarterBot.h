@@ -17,6 +17,7 @@ public:
 	void sendWorkersToGaz(BWAPI::Unit);
     void trainAdditionalWorkers();
     void buildAdditionalSupply();
+	void builAdditionalUnits();
     void drawDebugInformation();
 	bool buildBuilding(BWAPI::UnitType building);
 	void buildTechBuilding();
