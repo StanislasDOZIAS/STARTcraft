@@ -152,7 +152,7 @@ void Tools::SmartRightClick(BWAPI::Unit unit, BWAPI::Unit target)
 
 int Tools::GetTotalSupply(bool inProgress)
 {
-    // start the calculation by looking at our current completed supplyt
+    // start the calculation by looking at our current completed supply
     int totalSupply = BWAPI::Broodwar->self()->supplyTotal();
 
     // if we don't want to calculate the supply in progress, just return that value

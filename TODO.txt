@@ -1,0 +1,11 @@
+Solve slowness when buidling Spawning Pool
+
+AI for combat unit (move, when attack, how make fight, etc.)
+
+Scouting
+
+More Tech (evolve chamber, T3, ultra, spire, etc...)
+
+Take expension (first when lurker ?)
+
+Handle better gaz gathering

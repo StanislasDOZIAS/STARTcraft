@@ -153,26 +153,47 @@ void StarterBot::trainAdditionalWorkers()
 // Build more supply if we are going to run out soon
 void StarterBot::buildAdditionalSupply()
 {
-    // Get the amount of supply supply we currently have unused
-    const int unusedSupply = Tools::GetTotalSupply(true) - BWAPI::Broodwar->self()->supplyUsed();
+    // Get the amount of supply available (pb when an overlords hatches) and scan if some overlords are beeing morphed
+
+    int supplyAvailable = 0;
+    int ovie_Morphing = 0;
+
+    for (BWAPI::Unit unit : BWAPI::Broodwar->self()->getUnits())
+    {
+        if (unit->getType() == BWAPI::UnitTypes::Zerg_Overlord)
+        {
+            supplyAvailable += 16;
+        }
+        else if (unit->getType() == BWAPI::UnitTypes::Zerg_Egg && unit->getBuildType() == BWAPI::UnitTypes::Zerg_Overlord)
+        {
+            ovie_Morphing += 1;
+        }
+        else if ((unit->getType() == BWAPI::UnitTypes::Zerg_Hatchery && unit->isCompleted()) ||
+            unit->getType() == BWAPI::UnitTypes::Zerg_Lair ||
+            unit->getType() == BWAPI::UnitTypes::Zerg_Hive)
+        {
+            supplyAvailable += 2;
+        }
+    }
+
+    const int supply_Used = BWAPI::Broodwar->self()->supplyUsed();
 
     // If we have a sufficient amount of supply, we don't need to do anything
-
-    if ((unusedSupply < 4) && (BWAPI::UnitTypes::Zerg_Overlord.mineralPrice() < BWAPI::Broodwar->self()->minerals() - blocked_minerals)) {
-        bool ovie_Morphing = false;
-        BWAPI::Broodwar->sendText("Start counting");
-        for (BWAPI::Unit u : BWAPI::Broodwar->self()->getUnits()) {
-            if (u->getType() == BWAPI::UnitTypes::Zerg_Egg && u->getBuildType() == BWAPI::UnitTypes::Zerg_Overlord) {
-                ovie_Morphing = true;
-                BWAPI::Broodwar->sendText("Ovie making detected");
+    if ((supplyAvailable - supply_Used < 4)) {
+        // We don't authorize multiple overlords if supply_used <= 34 (i.e. 17)
+        if (supply_Used <= 34) {
+            BWAPI::Unit larva = Tools::GetUnitOfType(BWAPI::UnitTypes::Zerg_Larva);
+            if ((BWAPI::UnitTypes::Zerg_Overlord.mineralPrice() < BWAPI::Broodwar->self()->minerals() - blocked_minerals) && (larva != nullptr) && (ovie_Morphing==0)) {
+                if (larva->train(BWAPI::UnitTypes::Zerg_Overlord)) {
+                }
             }
         }
-
-        BWAPI::Unit larva = Tools::GetUnitOfType(BWAPI::UnitTypes::Zerg_Larva);
-        if (larva != nullptr && !ovie_Morphing) {
-            BWAPI::Broodwar->sendText("Should train ovie");
-            if (larva->train(BWAPI::UnitTypes::Zerg_Overlord)) {
-                BWAPI::Broodwar->sendText("Morphing success");
+        // We authorize 1 moprhing overlord if supply_used > 34 (i.e. 17)
+        else {
+            BWAPI::Unit larva = Tools::GetUnitOfType(BWAPI::UnitTypes::Zerg_Larva);
+            if ((BWAPI::UnitTypes::Zerg_Overlord.mineralPrice() < BWAPI::Broodwar->self()->minerals() - blocked_minerals) && (larva != nullptr) && (ovie_Morphing <= 1)) {
+                if (larva->train(BWAPI::UnitTypes::Zerg_Overlord)) {
+                }
             }
         }
     }
@@ -181,8 +202,29 @@ void StarterBot::buildAdditionalSupply()
 // Train more combat units so we can fight people
 void StarterBot::builAdditionalUnits()
 {
+
+
+    // Morph lukers
+    if ((got_Hydra_Den == 3) && (lurkerMorphing + lurkerOwned < hydraOwned) && (BWAPI::UnitTypes::Zerg_Lurker.mineralPrice() < BWAPI::Broodwar->self()->minerals() - blocked_minerals) &&
+        (BWAPI::UnitTypes::Zerg_Lurker.gasPrice() < BWAPI::Broodwar->self()->gas() - blocked_gas))
+    {
+        BWAPI::Unit hydra = Tools::GetUnitOfType(BWAPI::UnitTypes::Zerg_Hydralisk);
+        if (hydra != nullptr) {
+            if (hydra->morph(BWAPI::UnitTypes::Zerg_Lurker)) {
+                lurkerMorphing = 1;
+                hydraOwned -= 1;
+                for (BWAPI::Unit u : BWAPI::Broodwar->self()->getUnits()) {
+                    if (u->getType() == BWAPI::UnitTypes::Zerg_Lurker_Egg) {
+                        lurkerMorphing += 1;
+                    }
+                }
+            }
+        }
+    }
+
+
    // Build hydras
-    if ((got_Hydra_Den == 3) && (hydraOwned + hydraMorphing < 10) && (BWAPI::UnitTypes::Zerg_Hydralisk.mineralPrice() < BWAPI::Broodwar->self()->minerals() - blocked_minerals) &&
+    if ((got_Hydra_Den == 3) && (hydraOwned + hydraMorphing < 20) && (BWAPI::UnitTypes::Zerg_Hydralisk.mineralPrice() < BWAPI::Broodwar->self()->minerals() - blocked_minerals) &&
         (BWAPI::UnitTypes::Zerg_Zergling.gasPrice() < BWAPI::Broodwar->self()->gas() - blocked_gas))
     {
         BWAPI::Unit larva = Tools::GetUnitOfType(BWAPI::UnitTypes::Zerg_Larva);
@@ -198,26 +240,9 @@ void StarterBot::builAdditionalUnits()
         }
     }
 
-    // Morph lukers
-    if ((got_Hydra_Den == 3) && (lurkerMorphing + lurkerOwned < hydraOwned) && (BWAPI::UnitTypes::Zerg_Lurker.mineralPrice() < BWAPI::Broodwar->self()->minerals() - blocked_minerals) &&
-        (BWAPI::UnitTypes::Zerg_Lurker.gasPrice() < BWAPI::Broodwar->self()->gas() - blocked_gas))
-    {
-        BWAPI::Unit hydra = Tools::GetUnitOfType(BWAPI::UnitTypes::Zerg_Larva);
-        if (hydra != nullptr) {
-            if (hydra->morph(BWAPI::UnitTypes::Zerg_Lurker)) {
-                lurkerMorphing = 1;
-                for (BWAPI::Unit u : BWAPI::Broodwar->self()->getUnits()) {
-                    if (u->getType() == BWAPI::UnitTypes::Zerg_Lurker_Egg) {
-                        hydraMorphing += 1;
-                    }
-                }
-            }
-        }
-    }
-
 
     // Build zergling
-    if ((got_Spawning_pool==3)&&(zerglingOwned + zerglingMorphing < 20) && (BWAPI::UnitTypes::Zerg_Zergling.mineralPrice() < BWAPI::Broodwar->self()->minerals() - blocked_minerals))
+    if ((got_Spawning_pool==3)&&(zerglingOwned + zerglingMorphing < 50) && (BWAPI::UnitTypes::Zerg_Zergling.mineralPrice() < BWAPI::Broodwar->self()->minerals() - blocked_minerals))
     {
         BWAPI::Unit larva = Tools::GetUnitOfType(BWAPI::UnitTypes::Zerg_Larva);
         if (larva != nullptr) {
@@ -287,7 +312,7 @@ void StarterBot::buildTechBuilding()
 
 
     if ((got_Spawning_pool == 0) && (BWAPI::Broodwar->self()->minerals() >= BWAPI::UnitTypes::Zerg_Spawning_Pool.mineralPrice() - blocked_minerals) &&
-        buildBuilding(BWAPI::UnitTypes::Zerg_Spawning_Pool)){
+        (Tools::CountUnitsOfType(BWAPI::UnitTypes::Zerg_Drone, BWAPI::Broodwar->self()->getUnits())>=11) && buildBuilding(BWAPI::UnitTypes::Zerg_Spawning_Pool)){
         got_Spawning_pool = 1;
         blocked_minerals += BWAPI::UnitTypes::Zerg_Spawning_Pool.mineralPrice();
     }
@@ -460,6 +485,7 @@ void StarterBot::onUnitComplete(BWAPI::Unit unit)
     if (unit->getType() == BWAPI::UnitTypes::Zerg_Lurker) {
         lurkerMorphing -= 1;
         lurkerOwned += 1;
+        unit->burrow();
     }
 
     if (unit->getType() == BWAPI::UnitTypes::Zerg_Mutalisk) {
