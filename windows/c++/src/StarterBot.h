@@ -20,6 +20,7 @@ public:
 	void builAdditionalUnits();
     void drawDebugInformation();
 	bool buildBuilding(BWAPI::UnitType building);
+	void buildAdditionalHatch();
 	void buildTechBuilding();
 
     // functions that are triggered by various BWAPI events from main.cpp
