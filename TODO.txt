@@ -9,3 +9,5 @@ More Tech (evolve chamber, T3, ultra, spire, etc...)
 Take expension (first when lurker ?)
 
 Handle better gaz gathering
+
+Verify all works even vs zerg
