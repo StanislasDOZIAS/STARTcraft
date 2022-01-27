@@ -72,10 +72,8 @@ void StarterBot::onFrame()
     // Build Tech building
     buildTechBuilding();
 
-
-    // Build Tech building
+    // Build Additional Hatcheries
     buildAdditionalHatch();
-
 
     // Train more workers so we can gather more income
     trainAdditionalWorkers();
@@ -136,9 +134,6 @@ void StarterBot::trainAdditionalWorkers()
     const int workersOwned = Tools::CountUnitsOfType(workerType, BWAPI::Broodwar->self()->getUnits());
     if ((workersOwned < workersWanted) && (workerType.mineralPrice() < BWAPI::Broodwar->self()->minerals()-blocked_minerals))
     {
-        // get the unit pointer to my depot
-        const BWAPI::Unit myDepot = Tools::GetDepot();
-
         // if we have a valid depot unit and it's currently not training something, train a worker
         // there is no reason for a bot to ever use the unit queueing system, it just wastes resources
         BWAPI::Unit larva = Tools::GetUnitOfType(BWAPI::UnitTypes::Zerg_Larva);
@@ -451,6 +446,10 @@ void StarterBot::onUnitComplete(BWAPI::Unit unit)
 {
 
     if (unit->getType() == BWAPI::UnitTypes::Zerg_Overlord) {
+        BWAPI::Unit closestMineral = Tools::GetClosestUnitTo(unit, BWAPI::Broodwar->getMinerals());
+
+        // If a valid mineral was found, right click it with the unit in order to start harvesting
+        if (closestMineral) { unit->rightClick(closestMineral); }
     }
 
     if (unit->getType() == BWAPI::UnitTypes::Zerg_Spawning_Pool) {
