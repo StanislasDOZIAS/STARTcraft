@@ -1,13 +1,11 @@
-Solve slowness when buidling Spawning Pool and other buildings (deal with cancel buildings)
+Solve slowness when buidling Spawning Pool and other buildings ( + deal with cancel buildings)
 
 AI for combat unit (move, when attack, how make fight, etc.)
 
 Scouting (and how use it)
 
-More Tech (evolve chamber, T3, ultra, spire, etc...)
+More Tech (T3, ultra, spire, etc...)
 
 Take expension (first when lurker ?)
 
 Handle better gaz gathering
-
-Verify all works even vs zerg

@@ -413,7 +413,7 @@ bool StarterBot::builAdditionalUnits()
     }
 
     // Build zergling
-    if ((got_Spawning_pool==3)&&(zerglingOwned + zerglingMorphing < 50) && (BWAPI::UnitTypes::Zerg_Zergling.mineralPrice() < BWAPI::Broodwar->self()->minerals() - blocked_minerals))
+    if ((got_Spawning_pool==3) && (zerglingOwned + zerglingMorphing < 50) && (BWAPI::UnitTypes::Zerg_Zergling.mineralPrice() < BWAPI::Broodwar->self()->minerals() - blocked_minerals))
     {
         if (larva->train(BWAPI::UnitTypes::Zerg_Zergling)) {
             return true;
@@ -436,11 +436,10 @@ void StarterBot::morphFromCombatUnit()
 
 bool StarterBot::buildBuilding(BWAPI::UnitType building)
 {
-    BWAPI::UnitType builderType = building.whatBuilds().first;
     BWAPI::Unit builder = nullptr;
 
     for (BWAPI::Unit u : BWAPI::Broodwar->self()->getUnits()) {
-        if (u->getType() == BWAPI::UnitTypes::Zerg_Drone && !((u->isGatheringGas()))) {
+        if (u->getType() == BWAPI::UnitTypes::Zerg_Drone && (u->isGatheringMinerals())) {
             builder = u;
             break;
         }
@@ -480,7 +479,7 @@ void StarterBot::buildAdditionalHatch()
 void StarterBot::buildTechBuilding()
 {
      // We will follow the following Tech tree Building :
-     // Spawning pool, Vespin geyser extractor -> Lair,Hydralisk's Den,Evolution Chamber -> Queen's Nest
+     // Spawning pool, Vespin geyser extractor -> Lair, Hydralisk's Den, Evolution Chamber -> Queen's Nest
 
 
     if ((got_Spawning_pool == 0) && (BWAPI::Broodwar->self()->minerals() >= BWAPI::UnitTypes::Zerg_Spawning_Pool.mineralPrice() - blocked_minerals) &&
@@ -490,7 +489,7 @@ void StarterBot::buildTechBuilding()
     }
 
 
-    if ((got_Extractor == 0) && (got_Spawning_pool > 0) && (BWAPI::Broodwar->self()->minerals() >= BWAPI::UnitTypes::Zerg_Extractor.mineralPrice() - blocked_minerals) &&
+    if ((got_Extractor == 0) && (got_Spawning_pool > 1) && (BWAPI::Broodwar->self()->minerals() >= BWAPI::UnitTypes::Zerg_Extractor.mineralPrice() - blocked_minerals) &&
         buildBuilding(BWAPI::UnitTypes::Zerg_Extractor)){
         got_Extractor = 1;
         blocked_minerals += BWAPI::UnitTypes::Zerg_Extractor.mineralPrice();
@@ -587,7 +586,6 @@ void StarterBot::onUnitDestroy(BWAPI::Unit unit)
     }
 
     if (unit->getType() == BWAPI::UnitTypes::Zerg_Extractor) {
-        sendWorkersToGaz(unit);
         got_Extractor = 0;
     }
 
