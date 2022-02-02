@@ -36,6 +36,8 @@ int ground_melee_damage = 0;
 int air_armor = 0;
 int air_damage = 0;
 
+int droneWanted = 20;
+
 // The Combat Units we owne
 
 int droneOwned = 0;
@@ -365,7 +367,7 @@ bool StarterBot::trainAdditionalWorkers()
 {
     const BWAPI::UnitType workerType = BWAPI::Broodwar->self()->getRace().getWorker();
     
-    if ((droneMorphing + droneOwned < 20) && (BWAPI::Broodwar->self()->minerals() >= workerType.mineralPrice() + blocked_minerals)){
+    if ((droneMorphing + droneOwned < droneWanted) && (BWAPI::Broodwar->self()->minerals() >= workerType.mineralPrice() + blocked_minerals)){
         if (larva->train(BWAPI::UnitTypes::Zerg_Drone)) {
             return true;
         }
@@ -485,7 +487,7 @@ void StarterBot::buildTechBuilding()
      // Spawning pool, Vespin geyser extractor -> Lair, Hydralisk's Den, Evolution Chamber -> Queen's Nest
 
 
-    if ((got_Spawning_pool == 0) && (BWAPI::Broodwar->self()->minerals() >= BWAPI::UnitTypes::Zerg_Spawning_Pool.mineralPrice() + blocked_minerals) &&
+    if ((got_Spawning_pool == 0) && (number_Hatchery >= 2) && (BWAPI::Broodwar->self()->minerals() >= BWAPI::UnitTypes::Zerg_Spawning_Pool.mineralPrice() + blocked_minerals) &&
         (droneOwned + droneMorphing >=11) && buildBuilding(BWAPI::UnitTypes::Zerg_Spawning_Pool)){
         got_Spawning_pool = 1;
         blocked_minerals += BWAPI::UnitTypes::Zerg_Spawning_Pool.mineralPrice();
