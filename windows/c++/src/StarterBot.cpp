@@ -1,6 +1,7 @@
 #include "StarterBot.h"
 #include "Tools.h"
 #include "MapTools.h"
+#include <iostream>
 
 StarterBot::StarterBot()
 {
@@ -134,9 +135,11 @@ void StarterBot::onFrame()
 
     // Count our units
     countUnits();
+    
 
     // Build Tech building
     buildTechBuilding();
+    
 
     // Build Additional Hatcheries
     buildAdditionalHatch();
@@ -362,7 +365,7 @@ bool StarterBot::trainAdditionalWorkers()
 {
     const BWAPI::UnitType workerType = BWAPI::Broodwar->self()->getRace().getWorker();
     
-    if ((droneMorphing + droneOwned < 20) && (workerType.mineralPrice() < BWAPI::Broodwar->self()->minerals()-blocked_minerals)){
+    if ((droneMorphing + droneOwned < 20) && (BWAPI::Broodwar->self()->minerals() >= workerType.mineralPrice() + blocked_minerals)){
         if (larva->train(BWAPI::UnitTypes::Zerg_Drone)) {
             return true;
         }
@@ -381,7 +384,7 @@ bool StarterBot::buildAdditionalSupply()
     if ((supplyAvailable - supply_Used < 4) && (supplyAvailable < 400)) {
         // We don't authorize multiple overlords if supply_used <= 34 (i.e. 17)
         if (supply_Used <= 34) {
-            if ((BWAPI::UnitTypes::Zerg_Overlord.mineralPrice() < BWAPI::Broodwar->self()->minerals() - blocked_minerals) && (larva != nullptr) && (ovieMorphing == 0)) {
+            if ((BWAPI::Broodwar->self()->minerals() >= BWAPI::UnitTypes::Zerg_Overlord.mineralPrice() + blocked_minerals) && (larva != nullptr) && (ovieMorphing == 0)) {
                 if (larva->train(BWAPI::UnitTypes::Zerg_Overlord)) {
                     return true;
                 }
@@ -389,7 +392,7 @@ bool StarterBot::buildAdditionalSupply()
         }
         // We authorize 1 moprhing overlord if supply_used > 34 (i.e. 17)
         else {
-            if ((BWAPI::UnitTypes::Zerg_Overlord.mineralPrice() < BWAPI::Broodwar->self()->minerals() - blocked_minerals) && (larva != nullptr) && (ovieMorphing <= 1)) {
+            if ((BWAPI::Broodwar->self()->minerals() >= BWAPI::UnitTypes::Zerg_Overlord.mineralPrice() + blocked_minerals) && (larva != nullptr) && (ovieMorphing <= 1)) {
                 if (larva->train(BWAPI::UnitTypes::Zerg_Overlord)) {
                     return true;
                 }
@@ -404,8 +407,8 @@ bool StarterBot::buildAdditionalSupply()
 bool StarterBot::builAdditionalUnits()
 {
    // Build hydras
-    if ((got_Hydra_Den == 3) && (hydraOwned + hydraMorphing < 10) && (BWAPI::UnitTypes::Zerg_Hydralisk.mineralPrice() < BWAPI::Broodwar->self()->minerals() - blocked_minerals) &&
-        (BWAPI::UnitTypes::Zerg_Hydralisk.gasPrice() < BWAPI::Broodwar->self()->gas() - blocked_gas))
+    if ((got_Hydra_Den == 3) && (hydraOwned + hydraMorphing < 10) && (BWAPI::Broodwar->self()->minerals() >= BWAPI::UnitTypes::Zerg_Hydralisk.mineralPrice() + blocked_minerals) &&
+        (BWAPI::Broodwar->self()->gas() >= BWAPI::UnitTypes::Zerg_Hydralisk.gasPrice() + blocked_gas))
     {
         if (larva->train(BWAPI::UnitTypes::Zerg_Hydralisk)) {
             return true;
@@ -413,7 +416,7 @@ bool StarterBot::builAdditionalUnits()
     }
 
     // Build zergling
-    if ((got_Spawning_pool==3) && (zerglingOwned + zerglingMorphing < 50) && (BWAPI::UnitTypes::Zerg_Zergling.mineralPrice() < BWAPI::Broodwar->self()->minerals() - blocked_minerals))
+    if ((got_Spawning_pool==3) && (zerglingOwned + zerglingMorphing < 50) && (BWAPI::Broodwar->self()->minerals() >= BWAPI::UnitTypes::Zerg_Zergling.mineralPrice() + blocked_minerals))
     {
         if (larva->train(BWAPI::UnitTypes::Zerg_Zergling)) {
             return true;
@@ -426,8 +429,8 @@ bool StarterBot::builAdditionalUnits()
 void StarterBot::morphFromCombatUnit()
 {
     // Morph lurkers
-    if ((got_Hydra_Den == 3) && (lurkerMorphing + lurkerOwned < 10) && (BWAPI::UnitTypes::Zerg_Lurker.mineralPrice() < BWAPI::Broodwar->self()->minerals() - blocked_minerals) &&
-        (BWAPI::UnitTypes::Zerg_Lurker.gasPrice() < BWAPI::Broodwar->self()->gas() - blocked_gas)){
+    if ((got_Hydra_Den == 3) && (lurkerMorphing + lurkerOwned < 10) && (BWAPI::Broodwar->self()->minerals() >= BWAPI::UnitTypes::Zerg_Lurker.mineralPrice() + blocked_minerals) &&
+        (BWAPI::Broodwar->self()->gas() >= BWAPI::UnitTypes::Zerg_Lurker.gasPrice() + blocked_gas)){
         if (hydra != nullptr) {
             hydra->morph(BWAPI::UnitTypes::Zerg_Lurker);
         }
@@ -459,7 +462,7 @@ bool StarterBot::buildBuilding(BWAPI::UnitType building)
 
 void StarterBot::buildAdditionalHatch()
 {
-    if ((got_Hatchery == 0) &&  (BWAPI::Broodwar->self()->minerals() >= BWAPI::UnitTypes::Zerg_Hatchery.mineralPrice()*number_Hatchery + 50 - blocked_minerals) &&
+    if ((got_Hatchery == 0) &&  (BWAPI::Broodwar->self()->minerals() >= BWAPI::UnitTypes::Zerg_Hatchery.mineralPrice()*number_Hatchery + 50 + blocked_minerals) &&
         buildBuilding(BWAPI::UnitTypes::Zerg_Hatchery)) {
         got_Hatchery = 1;
         blocked_minerals += BWAPI::UnitTypes::Zerg_Hatchery.mineralPrice();
@@ -482,22 +485,22 @@ void StarterBot::buildTechBuilding()
      // Spawning pool, Vespin geyser extractor -> Lair, Hydralisk's Den, Evolution Chamber -> Queen's Nest
 
 
-    if ((got_Spawning_pool == 0) && (BWAPI::Broodwar->self()->minerals() >= BWAPI::UnitTypes::Zerg_Spawning_Pool.mineralPrice() - blocked_minerals) &&
+    if ((got_Spawning_pool == 0) && (BWAPI::Broodwar->self()->minerals() >= BWAPI::UnitTypes::Zerg_Spawning_Pool.mineralPrice() + blocked_minerals) &&
         (droneOwned + droneMorphing >=11) && buildBuilding(BWAPI::UnitTypes::Zerg_Spawning_Pool)){
         got_Spawning_pool = 1;
         blocked_minerals += BWAPI::UnitTypes::Zerg_Spawning_Pool.mineralPrice();
     }
 
 
-    if ((got_Extractor == 0) && (got_Spawning_pool > 1) && (BWAPI::Broodwar->self()->minerals() >= BWAPI::UnitTypes::Zerg_Extractor.mineralPrice() - blocked_minerals) &&
+    if ((got_Extractor == 0) && (got_Spawning_pool > 1) && (BWAPI::Broodwar->self()->minerals() >= BWAPI::UnitTypes::Zerg_Extractor.mineralPrice() + blocked_minerals) &&
         buildBuilding(BWAPI::UnitTypes::Zerg_Extractor)){
         got_Extractor = 1;
         blocked_minerals += BWAPI::UnitTypes::Zerg_Extractor.mineralPrice();
     }
 
 
-    if ((got_Lair == 0) && (got_Spawning_pool == 3) && (BWAPI::Broodwar->self()->minerals() >= BWAPI::UnitTypes::Zerg_Lair.mineralPrice() - blocked_minerals) &&
-        (BWAPI::Broodwar->self()->gas() >= BWAPI::UnitTypes::Zerg_Lair.gasPrice()-blocked_gas)) {
+    if ((got_Lair == 0) && (got_Spawning_pool == 3) && (BWAPI::Broodwar->self()->minerals() >= BWAPI::UnitTypes::Zerg_Lair.mineralPrice() + blocked_minerals) &&
+        (BWAPI::Broodwar->self()->gas() >= BWAPI::UnitTypes::Zerg_Lair.gasPrice() + blocked_gas)) {
         for (BWAPI::Unit u : BWAPI::Broodwar->self()->getUnits()) {
             if (u->getType() == BWAPI::UnitTypes::Zerg_Hatchery) {
                 u->morph(BWAPI::UnitTypes::Zerg_Lair);
@@ -506,15 +509,15 @@ void StarterBot::buildTechBuilding()
         }
     }
 
-    if ((got_Hydra_Den == 0) && (got_Lair > 0) && (BWAPI::Broodwar->self()->minerals() >= BWAPI::UnitTypes::Zerg_Hydralisk_Den.mineralPrice() - blocked_minerals) &&
-        (BWAPI::Broodwar->self()->gas() >= BWAPI::UnitTypes::Zerg_Hydralisk_Den.gasPrice() - blocked_gas) && buildBuilding(BWAPI::UnitTypes::Zerg_Hydralisk_Den)) {
+    if ((got_Hydra_Den == 0) && (got_Lair > 0) && (BWAPI::Broodwar->self()->minerals() >= BWAPI::UnitTypes::Zerg_Hydralisk_Den.mineralPrice() + blocked_minerals) &&
+        (BWAPI::Broodwar->self()->gas() >= BWAPI::UnitTypes::Zerg_Hydralisk_Den.gasPrice() + blocked_gas) && buildBuilding(BWAPI::UnitTypes::Zerg_Hydralisk_Den)) {
         got_Hydra_Den = 1;
         blocked_minerals += BWAPI::UnitTypes::Zerg_Hydralisk_Den.mineralPrice();
         blocked_gas += BWAPI::UnitTypes::Zerg_Hydralisk_Den.gasPrice();
     }
 
-    if ((got_Hydra_Den == 3) && (got_Lair == 3) && (number_Hatchery >= 2) &&  (BWAPI::Broodwar->self()->minerals() >= BWAPI::TechTypes::Lurker_Aspect.mineralPrice() - blocked_minerals) &&
-        (BWAPI::Broodwar->self()->gas() >= BWAPI::TechTypes::Lurker_Aspect.gasPrice() - blocked_gas)){
+    if ((got_Hydra_Den == 3) && (got_Lair == 3) && (number_Hatchery >= 2) &&  (BWAPI::Broodwar->self()->minerals() >= BWAPI::TechTypes::Lurker_Aspect.mineralPrice() + blocked_minerals) &&
+        (BWAPI::Broodwar->self()->gas() >= BWAPI::TechTypes::Lurker_Aspect.gasPrice() + blocked_gas)){
         for (BWAPI::Unit u : BWAPI::Broodwar->self()->getUnits()) {
             if (u->getType() == BWAPI::UnitTypes::Zerg_Hydralisk_Den) {
                 if (u->research(BWAPI::TechTypes::Lurker_Aspect)) {
@@ -524,8 +527,8 @@ void StarterBot::buildTechBuilding()
         }
     }
 
-    if ((got_Hydra_Den == 3) && (lurker_aspect == 1) && (number_Hatchery >= 2) && (BWAPI::Broodwar->self()->minerals() >= BWAPI::UpgradeTypes::Grooved_Spines.mineralPrice() - blocked_minerals) &&
-        (BWAPI::Broodwar->self()->gas() >= BWAPI::UpgradeTypes::Grooved_Spines.gasPrice() - blocked_gas)) {
+    if ((got_Hydra_Den == 3) && (lurker_aspect == 1) && (number_Hatchery >= 2) && (BWAPI::Broodwar->self()->minerals() >= BWAPI::UpgradeTypes::Grooved_Spines.mineralPrice() + blocked_minerals) &&
+        (BWAPI::Broodwar->self()->gas() >= BWAPI::UpgradeTypes::Grooved_Spines.gasPrice() + blocked_gas)) {
         for (BWAPI::Unit u : BWAPI::Broodwar->self()->getUnits()){
             if (u->getType() == BWAPI::UnitTypes::Zerg_Hydralisk_Den){
                 if (u->upgrade(BWAPI::UpgradeTypes::Grooved_Spines)) {
@@ -535,8 +538,8 @@ void StarterBot::buildTechBuilding()
         }
     }
 
-    if ((got_Hydra_Den == 3) && (grooved_spines == 1) && (number_Hatchery >= 2) && (BWAPI::Broodwar->self()->minerals() >= BWAPI::UpgradeTypes::Muscular_Augments.mineralPrice() - blocked_minerals) &&
-        (BWAPI::Broodwar->self()->gas() >= BWAPI::UpgradeTypes::Muscular_Augments.gasPrice() - blocked_gas)) {
+    if ((got_Hydra_Den == 3) && (grooved_spines == 1) && (number_Hatchery >= 2) && (BWAPI::Broodwar->self()->minerals() >= BWAPI::UpgradeTypes::Muscular_Augments.mineralPrice() + blocked_minerals) &&
+        (BWAPI::Broodwar->self()->gas() >= BWAPI::UpgradeTypes::Muscular_Augments.gasPrice() + blocked_gas)) {
         for (BWAPI::Unit u : BWAPI::Broodwar->self()->getUnits()) {
             if (u->getType() == BWAPI::UnitTypes::Zerg_Hydralisk_Den) {
                 if (u->upgrade(BWAPI::UpgradeTypes::Muscular_Augments)) {
@@ -546,15 +549,15 @@ void StarterBot::buildTechBuilding()
         }
     }
 
-    if ((got_Evolution_Chamber == 0) && (grooved_spines == 1) && (BWAPI::Broodwar->self()->minerals() >= BWAPI::UnitTypes::Zerg_Evolution_Chamber.mineralPrice() - blocked_minerals) &&
+    if ((got_Evolution_Chamber == 0) && (grooved_spines == 1) && (BWAPI::Broodwar->self()->minerals() >= BWAPI::UnitTypes::Zerg_Evolution_Chamber.mineralPrice() + blocked_minerals) &&
         buildBuilding(BWAPI::UnitTypes::Zerg_Evolution_Chamber)) {
         got_Evolution_Chamber = 1;
         blocked_minerals += BWAPI::UnitTypes::Zerg_Evolution_Chamber.mineralPrice();
     }
 
 
-    if ((got_Evolution_Chamber == 3) && (BWAPI::Broodwar->self()->minerals() >= BWAPI::UpgradeTypes::Zerg_Missile_Attacks.mineralPrice() - blocked_minerals) &&
-        (BWAPI::Broodwar->self()->gas() >= BWAPI::UpgradeTypes::Zerg_Missile_Attacks.gasPrice() - blocked_gas)) {
+    if ((got_Evolution_Chamber == 3) && (BWAPI::Broodwar->self()->minerals() >= BWAPI::UpgradeTypes::Zerg_Missile_Attacks.mineralPrice() + blocked_minerals) &&
+        (BWAPI::Broodwar->self()->gas() >= BWAPI::UpgradeTypes::Zerg_Missile_Attacks.gasPrice() + blocked_gas)) {
         for (BWAPI::Unit u : BWAPI::Broodwar->self()->getUnits()) {
             if (u->getType() == BWAPI::UnitTypes::Zerg_Evolution_Chamber){
                 if (u->upgrade(BWAPI::UpgradeTypes::Zerg_Missile_Attacks)) {
