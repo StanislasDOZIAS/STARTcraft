@@ -19,9 +19,10 @@ public:
     bool buildAdditionalSupply();
 	bool builAdditionalUnits();
 	void morphFromCombatUnit();
-	bool buildBuilding(BWAPI::UnitType building);
+	bool buildBuilding(BWAPI::UnitType);
 	void buildAdditionalHatch();
 	void buildTechBuilding();
+	void attackStartLocations();
 	void drawDebugInformation();
 
     // functions that are triggered by various BWAPI events from main.cpp

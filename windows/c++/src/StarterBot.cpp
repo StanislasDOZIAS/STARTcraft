@@ -36,7 +36,13 @@ int ground_melee_damage = 0;
 int air_armor = 0;
 int air_damage = 0;
 
-int droneWanted = 20;
+// The Unit we want
+
+int droneWanted = 12;
+int zerglingWanted = 20;
+int hydraWanted = 10;
+int lurkerWanted = 0;
+
 
 // The Combat Units we owne
 
@@ -149,6 +155,8 @@ void StarterBot::onFrame()
 
     // To morph from combat unit
     morphFromCombatUnit();
+
+    attackStartLocations();
 
     // To morph from larva we need to have a larva
     if (larva != nullptr) {
@@ -412,7 +420,7 @@ bool StarterBot::buildAdditionalSupply()
 bool StarterBot::builAdditionalUnits()
 {
    // Build hydras
-    if ((got_Hydra_Den == 3) && (hydraOwned + hydraMorphing < 10) && (BWAPI::Broodwar->self()->minerals() >= BWAPI::UnitTypes::Zerg_Hydralisk.mineralPrice() + blocked_minerals) &&
+    if ((got_Hydra_Den == 3) && (hydraOwned + hydraMorphing < hydraWanted) && (BWAPI::Broodwar->self()->minerals() >= BWAPI::UnitTypes::Zerg_Hydralisk.mineralPrice() + blocked_minerals) &&
         (BWAPI::Broodwar->self()->gas() >= BWAPI::UnitTypes::Zerg_Hydralisk.gasPrice() + blocked_gas))
     {
         if (larva->train(BWAPI::UnitTypes::Zerg_Hydralisk)) {
@@ -421,7 +429,7 @@ bool StarterBot::builAdditionalUnits()
     }
 
     // Build zergling
-    if ((got_Spawning_pool==3) && (zerglingOwned + zerglingMorphing < 50) && (BWAPI::Broodwar->self()->minerals() >= BWAPI::UnitTypes::Zerg_Zergling.mineralPrice() + blocked_minerals))
+    if ((got_Spawning_pool==3) && (zerglingOwned + zerglingMorphing < zerglingWanted) && (BWAPI::Broodwar->self()->minerals() >= BWAPI::UnitTypes::Zerg_Zergling.mineralPrice() + blocked_minerals))
     {
         if (larva->train(BWAPI::UnitTypes::Zerg_Zergling)) {
             return true;
@@ -434,7 +442,7 @@ bool StarterBot::builAdditionalUnits()
 void StarterBot::morphFromCombatUnit()
 {
     // Morph lurkers
-    if ((got_Hydra_Den == 3) && (lurkerMorphing + lurkerOwned < 10) && (BWAPI::Broodwar->self()->minerals() >= BWAPI::UnitTypes::Zerg_Lurker.mineralPrice() + blocked_minerals) &&
+    if ((got_Hydra_Den == 3) && (lurkerMorphing + lurkerOwned < lurkerWanted) && (BWAPI::Broodwar->self()->minerals() >= BWAPI::UnitTypes::Zerg_Lurker.mineralPrice() + blocked_minerals) &&
         (BWAPI::Broodwar->self()->gas() >= BWAPI::UnitTypes::Zerg_Lurker.gasPrice() + blocked_gas)){
         if (hydra != nullptr) {
             hydra->morph(BWAPI::UnitTypes::Zerg_Lurker);
@@ -573,7 +581,19 @@ void StarterBot::buildTechBuilding()
     }
 }
 
-
+void StarterBot::attackStartLocations() {
+    if ((zerglingOwned == zerglingWanted) && (hydraOwned == hydraWanted)) {
+        for (BWAPI::Unit unit : BWAPI::Broodwar->self()->getUnits()) {
+            if ((unit->getType() == BWAPI::UnitTypes::Zerg_Zergling) || (unit->getType() == BWAPI::UnitTypes::Zerg_Hydralisk)) {
+                for (BWAPI::TilePosition ennemyLocation : BWAPI::Broodwar->getStartLocations()) {
+                    if (ennemyLocation != BWAPI::Broodwar->self()->getStartLocation()) {
+                        unit->attack(static_cast <BWAPI::Position>(ennemyLocation), true);
+                    }
+                }
+            }
+        }
+    }
+}
 
 
 // Draw some relevent information to the screen to help us debug the bot
@@ -622,6 +642,7 @@ void StarterBot::onUnitDestroy(BWAPI::Unit unit)
     }
 }
 
+
 // Called whenever a unit is morphed, with a pointer to the unit
 // Zerg units morph when they turn into other units
 void StarterBot::onUnitMorph(BWAPI::Unit unit)
@@ -658,7 +679,6 @@ void StarterBot::onUnitComplete(BWAPI::Unit unit)
 
 
     // Units
-
 }
 
 // Called whenever a unit appears, with a pointer to the destroyed unit
