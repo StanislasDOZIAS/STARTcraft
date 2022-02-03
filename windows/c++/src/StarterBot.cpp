@@ -70,7 +70,7 @@ BWAPI::Unit hydra = nullptr;
 void StarterBot::onStart()
 {
     // Set our BWAPI options here    
-	BWAPI::Broodwar->setLocalSpeed(5);
+	BWAPI::Broodwar->setLocalSpeed(0);
     BWAPI::Broodwar->setFrameSkip(0);
     
     // Enable the flag that tells BWAPI top let users enter input while bot plays
@@ -309,6 +309,9 @@ void StarterBot::countUnits()
 
         if (unit->getType() == BWAPI::UnitTypes::Zerg_Lurker) {
             lurkerOwned += 1;
+            if (unit->isIdle()) {
+                unit->burrow();
+            }
         }
 
         if (unit->getType() == BWAPI::UnitTypes::Zerg_Lurker_Egg) {
@@ -464,7 +467,7 @@ bool StarterBot::buildBuilding(BWAPI::UnitType building)
 
 void StarterBot::buildAdditionalHatch()
 {
-    if ((got_Hatchery == 0) &&  (BWAPI::Broodwar->self()->minerals() >= BWAPI::UnitTypes::Zerg_Hatchery.mineralPrice()*number_Hatchery + 50 + blocked_minerals) &&
+    if ((got_Hatchery == 0) &&  (BWAPI::Broodwar->self()->minerals() >= BWAPI::UnitTypes::Zerg_Hatchery.mineralPrice()*number_Hatchery + blocked_minerals) &&
         buildBuilding(BWAPI::UnitTypes::Zerg_Hatchery)) {
         got_Hatchery = 1;
         blocked_minerals += BWAPI::UnitTypes::Zerg_Hatchery.mineralPrice();
@@ -655,10 +658,6 @@ void StarterBot::onUnitComplete(BWAPI::Unit unit)
 
 
     // Units
-
-    if ((unit->getPlayer() == BWAPI::Broodwar->self()) && (unit->getType() == BWAPI::UnitTypes::Zerg_Lurker)) {
-        unit->burrow();
-    }
 
 }
 
