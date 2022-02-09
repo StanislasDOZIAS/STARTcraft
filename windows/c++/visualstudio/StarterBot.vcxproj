@@ -11,14 +11,22 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\src\Actions.h" />
     <ClInclude Include="..\src\Grid.hpp" />
     <ClInclude Include="..\src\MapTools.h" />
+    <ClInclude Include="..\src\MicroGestion.h" />
+    <ClInclude Include="..\src\Scenario.h" />
+    <ClInclude Include="..\src\Squad.h" />
     <ClInclude Include="..\src\StarterBot.h" />
     <ClInclude Include="..\src\Tools.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\src\Actions.cpp" />
     <ClCompile Include="..\src\main.cpp" />
     <ClCompile Include="..\src\MapTools.cpp" />
+    <ClCompile Include="..\src\MicroGestion.cpp" />
+    <ClCompile Include="..\src\Scenario.cpp" />
+    <ClCompile Include="..\src\Squad.cpp" />
     <ClCompile Include="..\src\StarterBot.cpp" />
     <ClCompile Include="..\src\Tools.cpp" />
   </ItemGroup>

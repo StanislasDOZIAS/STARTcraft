@@ -1,11 +1,16 @@
 #pragma once
 
 #include "MapTools.h"
-
+#include "Squad.h"
+#include "Scenario.h"
+#include "Actions.h"
 #include <BWAPI.h>
 
-class StarterBot
-{
+
+//forward declaration needed for compilation
+struct UnitCount;
+
+class StarterBot{
     MapTools m_mapTools;
 
 public:
@@ -13,15 +18,15 @@ public:
     StarterBot();
 
     // helper functions to get you started with bot programming and learn the API
-	void countUnits();
+	//void countUnits();
 	void sendWorkersToGaz(BWAPI::Unit);
     bool trainAdditionalWorkers();
     bool buildAdditionalSupply();
 	bool builAdditionalUnits();
 	void morphFromCombatUnit();
-	bool buildBuilding(BWAPI::UnitType);
-	void buildAdditionalHatch();
-	void buildTechBuilding();
+	//bool buildBuilding(BWAPI::UnitType);
+	//void buildAdditionalHatch();
+	//void buildTechBuilding();
 	void attackStartLocations();
 	void drawDebugInformation();
 
@@ -37,4 +42,14 @@ public:
 	void onUnitShow(BWAPI::Unit unit);
 	void onUnitHide(BWAPI::Unit unit);
 	void onUnitRenegade(BWAPI::Unit unit);
+
+
+	Squad& getSquad(int Squad_type, int ActionId, int size = 0);
+	BWAPI::Unit& getUnit(BWAPI::UnitType type);
+	void enlistUnit(Squad& squad);
+	bool unitInSquad(BWAPI::Unit unit);
+
+private:
+	UnitCount* myUnits;
+	std::list<Squad*> mySquads;
 };

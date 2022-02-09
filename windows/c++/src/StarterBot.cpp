@@ -3,8 +3,8 @@
 #include "MapTools.h"
 #include <iostream>
 
-StarterBot::StarterBot()
-{
+StarterBot::StarterBot() {
+    myUnits = new UnitCount();
 }
 
 // Track the Buildings
@@ -13,64 +13,7 @@ StarterBot::StarterBot()
 // 2 : The building is constructing
 // 3 : The builindg is constructed
 
-int got_Spawning_pool = 0;
-int got_Extractor = 0;
-int got_Lair = 0;
-int got_Hydra_Den = 0;
-int got_Evolution_Chamber = 0;
-int got_Queens_Nest = 0;
-int got_Hatchery = 0;
-
-int number_Hatchery = 1;
-
-// The upgrade we have
-
-int lurker_aspect = 0;
-int grooved_spines = 0;
-int muscular_augments = 0;
-
-int ground_armor = 0;
-int ground_dist_damage = 0;
-int ground_melee_damage = 0;
-
-int air_armor = 0;
-int air_damage = 0;
-
-// The Unit we want
-
-int droneWanted = 12;
-int zerglingWanted = 20;
-int hydraWanted = 10;
-int lurkerWanted = 0;
-
-
-// The Combat Units we owne
-
-int droneOwned = 0;
-int zerglingOwned = 0;
-int hydraOwned = 0;
-int lurkerOwned = 0;
-int mutaliskOwned = 0;
-int ultraliskOwned = 0;
-
-int droneMorphing = 0;
-int zerglingMorphing = 0;
-int hydraMorphing = 0;
-int lurkerMorphing = 0;
-int mutaliskMorphing = 0;
-int ultraliskMorphing = 0;
-
-int ovieMorphing = 0;
-int supplyAvailable = 0;
-
 // The lock ressources for buidlings
-
-int blocked_minerals = 0;
-int blocked_gas = 0;
-
-// The only larva and hydra we need per frame
-BWAPI::Unit larva = nullptr;
-BWAPI::Unit hydra = nullptr;
 
 // Called when the bot starts!
 void StarterBot::onStart()
@@ -90,37 +33,37 @@ void StarterBot::onStart()
     //
 
     // Buildings
-    got_Spawning_pool = 0;
-    got_Extractor = 0;
-    got_Lair = 0;
-    got_Hydra_Den = 0;
-    got_Evolution_Chamber = 0;
-    got_Queens_Nest = 0;
-    got_Hatchery = 0;
+    (*myUnits).got_Spawning_pool = 0;
+    (*myUnits).got_Extractor = 0;
+    (*myUnits).got_Lair = 0;
+    (*myUnits).got_Hydra_Den = 0;
+    (*myUnits).got_Evolution_Chamber = 0;
+    (*myUnits).got_Queens_Nest = 0;
+    (*myUnits).got_Hatchery = 0;
 
-    number_Hatchery = 1;
+    (*myUnits).number_Hatchery = 1;
 
     // The upgrade we have
 
-    lurker_aspect = 0;
-    grooved_spines = 0;
-    muscular_augments = 0;
+    (*myUnits).lurker_aspect = 0;
+    (*myUnits).grooved_spines = 0;
+    (*myUnits).muscular_augments = 0;
 
-    ground_armor = 0;
-    ground_dist_damage = 0;
-    ground_melee_damage = 0;
+    (*myUnits).ground_armor = 0;
+    (*myUnits).ground_dist_damage = 0;
+    (*myUnits).ground_melee_damage = 0;
 
-    air_armor = 0;
-    air_damage = 0;
+    (*myUnits).air_armor = 0;
+    (*myUnits).air_damage = 0;
 
     // The lock ressources for buidlings
 
-    blocked_minerals = 0;
-    blocked_gas = 0;
+    (*myUnits).blocked_minerals = 0;
+    (*myUnits).blocked_gas = 0;
 
     // The only larva and hydra we need per frame
-    larva = nullptr;
-    hydra = nullptr;
+    (*myUnits).larva = nullptr;
+    (*myUnits).hydra = nullptr;
 }
 
 // Called whenever the game ends and tells you if you won or not
@@ -141,17 +84,20 @@ void StarterBot::onFrame()
     // Draw some relevent information to the screen to help us debug the bot
     drawDebugInformation();
 
+    //int* Actions = Scenario(BWAPI::Broodwar, myUnits, this);
+
     // Count our units
-    countUnits();
-    
+    //countUnits();
+    countUnits(BWAPI::Broodwar, *myUnits);
+    Actions::ExpendBase_1((*myUnits), mySquads);
+    Actions::BaseArmy((*myUnits), mySquads);
 
     // Build Tech building
-    buildTechBuilding();
+    //buildTechBuilding();
     
 
     // Build Additional Hatcheries
-    buildAdditionalHatch();
-
+    //buildAdditionalHatch();
 
     // To morph from combat unit
     morphFromCombatUnit();
@@ -159,7 +105,7 @@ void StarterBot::onFrame()
     attackStartLocations();
 
     // To morph from larva we need to have a larva
-    if (larva != nullptr) {
+    if ((*myUnits).larva != nullptr) {
         // Build more supply if we are going to run out soon
         if (buildAdditionalSupply()) {
             return;
@@ -174,187 +120,6 @@ void StarterBot::onFrame()
         if (builAdditionalUnits()) {
             return;
         }
-    }
-}
-
-
-
-
-// Count all the units so thatwe don't count them many times
-void StarterBot::countUnits()
-{
-    // Let's send all of our starting workers to the closest mineral to them
-    // First we need to loop over all of the units that we (BWAPI::Broodwar->self()) own
-    const BWAPI::Unitset& myUnits = BWAPI::Broodwar->self()->getUnits();
-
-    // Reset the units
-
-    droneOwned = 0;
-    zerglingOwned = 0;
-    hydraOwned = 0;
-    lurkerOwned = 0;
-    mutaliskOwned = 0;
-    ultraliskOwned = 0;
-
-    droneMorphing = 0;
-    zerglingMorphing = 0;
-    hydraMorphing = 0;
-    lurkerMorphing = 0;
-    mutaliskMorphing = 0;
-    ultraliskMorphing = 0;
-
-    ovieMorphing = 0;
-    supplyAvailable = 0;
-
-
-    for (BWAPI::Unit unit : myUnits)
-    {
-        // Buildings
-        if (unit->getType() == BWAPI::UnitTypes::Zerg_Spawning_Pool) {
-            if (unit->isBeingConstructed()) {
-                if (got_Spawning_pool == 1) {
-                    blocked_minerals -= unit->getType().mineralPrice();
-                }
-                got_Spawning_pool = 2;
-            }
-            else {
-                got_Spawning_pool = 3;
-            }
-        }
-
-        if (unit->getType() == BWAPI::UnitTypes::Zerg_Extractor) {
-            if (unit->isBeingConstructed()) {
-                if (got_Extractor == 1) {
-                    blocked_minerals -= unit->getType().mineralPrice();
-                }
-                got_Extractor = 2;
-            }
-            else {
-                if (got_Extractor == 2) {
-                    sendWorkersToGaz(unit);
-                }
-                got_Extractor = 3;
-            }
-        }
-
-        if (unit->getType() == BWAPI::UnitTypes::Zerg_Lair) {
-            supplyAvailable += 2;
-            if (unit->isBeingConstructed()) {
-                if (got_Lair == 1) {
-                    blocked_minerals -= unit->getType().mineralPrice();
-                    blocked_gas -= unit->getType().gasPrice();
-                }
-                got_Lair = 2;
-            }
-            else {
-                got_Lair = 3;
-            }
-        }
-
-        if ((unit->getType() == BWAPI::UnitTypes::Zerg_Hatchery && unit->isCompleted()) || unit->getType() == BWAPI::UnitTypes::Zerg_Hive)
-        {
-            supplyAvailable += 2;
-        }
-
-        if (unit->getType() == BWAPI::UnitTypes::Zerg_Hydralisk_Den) {
-            if (unit->isBeingConstructed()) {
-                if (got_Hydra_Den == 1) {
-                    blocked_minerals -= unit->getType().mineralPrice();
-                    blocked_gas -= unit->getType().gasPrice();
-                }
-                got_Hydra_Den = 2;
-            }
-            else {
-                got_Hydra_Den = 3;
-            }
-        }
-
-        if (unit->getType() == BWAPI::UnitTypes::Zerg_Evolution_Chamber) {
-            if (unit->isBeingConstructed()) {
-                if (got_Evolution_Chamber == 1) {
-                    blocked_minerals -= unit->getType().mineralPrice();
-                    blocked_gas -= unit->getType().gasPrice();
-                }
-                got_Evolution_Chamber = 2;
-            }
-            else {
-                got_Evolution_Chamber = 3;
-            }
-        }
-
-
-        // Units
-
-        if (unit->getType() == BWAPI::UnitTypes::Zerg_Larva) {
-            larva = unit;
-        }
-
-        if (unit->getType() == BWAPI::UnitTypes::Zerg_Drone) {
-            droneOwned += 1;
-            // If it is an idle worker, then we want to send it somewhere
-            if (unit->isIdle())
-            {
-                // Get the closest mineral to this worker unit
-                BWAPI::Unit closestMineral = Tools::GetClosestUnitTo(unit, BWAPI::Broodwar->getMinerals());
-
-                // If a valid mineral was found, right click it with the unit in order to start harvesting
-                if (closestMineral) { unit->rightClick(closestMineral); }
-            }
-        }
-
-        if (unit->getType() == BWAPI::UnitTypes::Zerg_Overlord) {
-            supplyAvailable += 16;
-        }
-
-        if (unit->getType() == BWAPI::UnitTypes::Zerg_Zergling) {
-            zerglingOwned += 1;
-        }
-
-        if (unit->getType() == BWAPI::UnitTypes::Zerg_Hydralisk) {
-            hydraOwned += 1;
-            hydra = unit;
-        }
-
-        if (unit->getType() == BWAPI::UnitTypes::Zerg_Lurker) {
-            lurkerOwned += 1;
-            if (unit->isIdle()) {
-                unit->burrow();
-            }
-        }
-
-        if (unit->getType() == BWAPI::UnitTypes::Zerg_Lurker_Egg) {
-            lurkerMorphing += 1;
-        }
-
-        if (unit->getType() == BWAPI::UnitTypes::Zerg_Mutalisk) {
-            mutaliskOwned += 1;
-        }
-
-        if (unit->getType() == BWAPI::UnitTypes::Zerg_Ultralisk) {
-            ultraliskOwned += 1;
-        }
-
-        if (unit->getType() == BWAPI::UnitTypes::Zerg_Egg) {
-            if (unit->getBuildType() == BWAPI::UnitTypes::Zerg_Drone) {
-                droneMorphing += 1;
-            }
-            if (unit->getBuildType() == BWAPI::UnitTypes::Zerg_Zergling) {
-                zerglingMorphing += 1;
-            }
-            if (unit->getBuildType() == BWAPI::UnitTypes::Zerg_Hydralisk) {
-                hydraMorphing += 1;
-            }
-            if (unit->getBuildType() == BWAPI::UnitTypes::Zerg_Mutalisk) {
-                mutaliskMorphing += 1;
-            }
-            if (unit->getBuildType() == BWAPI::UnitTypes::Zerg_Ultralisk) {
-                ultraliskMorphing += 1;
-            }
-            if (unit->getBuildType() == BWAPI::UnitTypes::Zerg_Overlord) {
-                ovieMorphing += 1;
-            }
-        }
-
     }
 }
 
@@ -378,8 +143,8 @@ bool StarterBot::trainAdditionalWorkers()
 {
     const BWAPI::UnitType workerType = BWAPI::Broodwar->self()->getRace().getWorker();
     
-    if ((droneMorphing + droneOwned < droneWanted) && (BWAPI::Broodwar->self()->minerals() >= workerType.mineralPrice() + blocked_minerals)){
-        if (larva->train(BWAPI::UnitTypes::Zerg_Drone)) {
+    if (((*myUnits).droneMorphing + (*myUnits).droneOwned < (*myUnits).droneWanted) && (BWAPI::Broodwar->self()->minerals() >= workerType.mineralPrice() + (*myUnits).blocked_minerals)){
+        if ((*myUnits).larva->train(BWAPI::UnitTypes::Zerg_Drone)) {
             return true;
         }
     }
@@ -394,19 +159,19 @@ bool StarterBot::buildAdditionalSupply()
     const int supply_Used = BWAPI::Broodwar->self()->supplyUsed();
 
     // If we have a sufficient amount of supply, we don't need to do anything
-    if ((supplyAvailable - supply_Used < 4) && (supplyAvailable < 400)) {
+    if (((*myUnits).supplyAvailable - supply_Used < 4) && ((*myUnits).supplyAvailable < 400)) {
         // We don't authorize multiple overlords if supply_used <= 34 (i.e. 17)
         if (supply_Used <= 34) {
-            if ((BWAPI::Broodwar->self()->minerals() >= BWAPI::UnitTypes::Zerg_Overlord.mineralPrice() + blocked_minerals) && (larva != nullptr) && (ovieMorphing == 0)) {
-                if (larva->train(BWAPI::UnitTypes::Zerg_Overlord)) {
+            if ((BWAPI::Broodwar->self()->minerals() >= BWAPI::UnitTypes::Zerg_Overlord.mineralPrice() + (*myUnits).blocked_minerals) && ((*myUnits).larva != nullptr) && ((*myUnits).ovieMorphing == 0)) {
+                if ((*myUnits).larva->train(BWAPI::UnitTypes::Zerg_Overlord)) {
                     return true;
                 }
             }
         }
         // We authorize 1 moprhing overlord if supply_used > 34 (i.e. 17)
         else {
-            if ((BWAPI::Broodwar->self()->minerals() >= BWAPI::UnitTypes::Zerg_Overlord.mineralPrice() + blocked_minerals) && (larva != nullptr) && (ovieMorphing <= 1)) {
-                if (larva->train(BWAPI::UnitTypes::Zerg_Overlord)) {
+            if ((BWAPI::Broodwar->self()->minerals() >= BWAPI::UnitTypes::Zerg_Overlord.mineralPrice() + (*myUnits).blocked_minerals) && ((*myUnits).larva != nullptr) && ((*myUnits).ovieMorphing <= 1)) {
+                if ((*myUnits).larva->train(BWAPI::UnitTypes::Zerg_Overlord)) {
                     return true;
                 }
             }
@@ -420,18 +185,18 @@ bool StarterBot::buildAdditionalSupply()
 bool StarterBot::builAdditionalUnits()
 {
    // Build hydras
-    if ((got_Hydra_Den == 3) && (hydraOwned + hydraMorphing < hydraWanted) && (BWAPI::Broodwar->self()->minerals() >= BWAPI::UnitTypes::Zerg_Hydralisk.mineralPrice() + blocked_minerals) &&
-        (BWAPI::Broodwar->self()->gas() >= BWAPI::UnitTypes::Zerg_Hydralisk.gasPrice() + blocked_gas))
+    if (((*myUnits).got_Hydra_Den == 3) && ((*myUnits).hydraOwned + (*myUnits).hydraMorphing < (*myUnits).hydraWanted) && (BWAPI::Broodwar->self()->minerals() >= BWAPI::UnitTypes::Zerg_Hydralisk.mineralPrice() + (*myUnits).blocked_minerals) &&
+        (BWAPI::Broodwar->self()->gas() >= BWAPI::UnitTypes::Zerg_Hydralisk.gasPrice() + (*myUnits).blocked_gas))
     {
-        if (larva->train(BWAPI::UnitTypes::Zerg_Hydralisk)) {
+        if ((*myUnits).larva->train(BWAPI::UnitTypes::Zerg_Hydralisk)) {
             return true;
         }
     }
 
     // Build zergling
-    if ((got_Spawning_pool==3) && (zerglingOwned + zerglingMorphing < zerglingWanted) && (BWAPI::Broodwar->self()->minerals() >= BWAPI::UnitTypes::Zerg_Zergling.mineralPrice() + blocked_minerals))
+    if (((*myUnits).got_Spawning_pool==3) && ((*myUnits).zerglingOwned + (*myUnits).zerglingMorphing < (*myUnits).zerglingWanted) && (BWAPI::Broodwar->self()->minerals() >= BWAPI::UnitTypes::Zerg_Zergling.mineralPrice() + (*myUnits).blocked_minerals))
     {
-        if (larva->train(BWAPI::UnitTypes::Zerg_Zergling)) {
+        if ((*myUnits).larva->train(BWAPI::UnitTypes::Zerg_Zergling)) {
             return true;
         }
     }
@@ -442,14 +207,14 @@ bool StarterBot::builAdditionalUnits()
 void StarterBot::morphFromCombatUnit()
 {
     // Morph lurkers
-    if ((got_Hydra_Den == 3) && (lurkerMorphing + lurkerOwned < lurkerWanted) && (BWAPI::Broodwar->self()->minerals() >= BWAPI::UnitTypes::Zerg_Lurker.mineralPrice() + blocked_minerals) &&
-        (BWAPI::Broodwar->self()->gas() >= BWAPI::UnitTypes::Zerg_Lurker.gasPrice() + blocked_gas)){
-        if (hydra != nullptr) {
-            hydra->morph(BWAPI::UnitTypes::Zerg_Lurker);
+    if (((*myUnits).got_Hydra_Den == 3) && ((*myUnits).lurkerMorphing + (*myUnits).lurkerOwned < (*myUnits).lurkerWanted) && (BWAPI::Broodwar->self()->minerals() >= BWAPI::UnitTypes::Zerg_Lurker.mineralPrice() + (*myUnits).blocked_minerals) &&
+        (BWAPI::Broodwar->self()->gas() >= BWAPI::UnitTypes::Zerg_Lurker.gasPrice() + (*myUnits).blocked_gas)){
+        if ((*myUnits).hydra != nullptr) {
+            (*myUnits).hydra->morph(BWAPI::UnitTypes::Zerg_Lurker);
         }
     }
 }
-
+/*
 bool StarterBot::buildBuilding(BWAPI::UnitType building)
 {
     BWAPI::Unit builder = nullptr;
@@ -471,8 +236,8 @@ bool StarterBot::buildBuilding(BWAPI::UnitType building)
     BWAPI::TilePosition buildPos = BWAPI::Broodwar->getBuildLocation(building, desiredPos, maxBuildRange, buildOnCreep);
     return builder->build(building, buildPos);
 }
-
-
+/*
+/*
 void StarterBot::buildAdditionalHatch()
 {
     if ((got_Hatchery == 0) &&  (BWAPI::Broodwar->self()->minerals() >= BWAPI::UnitTypes::Zerg_Hatchery.mineralPrice()*number_Hatchery + blocked_minerals) &&
@@ -490,8 +255,8 @@ void StarterBot::buildAdditionalHatch()
             }
         }
     }
-}
-
+}*/
+/*
 void StarterBot::buildTechBuilding()
 {
      // We will follow the following Tech tree Building :
@@ -580,9 +345,9 @@ void StarterBot::buildTechBuilding()
         }
     }
 }
-
+*/
 void StarterBot::attackStartLocations() {
-    if ((zerglingOwned == zerglingWanted) && (hydraOwned == hydraWanted)) {
+    if (((*myUnits).zerglingOwned == (*myUnits).zerglingWanted) && ((*myUnits).hydraOwned == (*myUnits).hydraWanted)) {
         for (BWAPI::Unit unit : BWAPI::Broodwar->self()->getUnits()) {
             if ((unit->getType() == BWAPI::UnitTypes::Zerg_Zergling) || (unit->getType() == BWAPI::UnitTypes::Zerg_Hydralisk)) {
                 for (BWAPI::TilePosition ennemyLocation : BWAPI::Broodwar->getStartLocations()) {
@@ -610,34 +375,34 @@ void StarterBot::onUnitDestroy(BWAPI::Unit unit)
 
     // Buildings
     if (unit->getType() == BWAPI::UnitTypes::Zerg_Spawning_Pool) {
-        got_Spawning_pool = 0;
+        (*myUnits).got_Spawning_pool = 0;
     }
 
     if (unit->getType() == BWAPI::UnitTypes::Zerg_Extractor) {
-        got_Extractor = 0;
+        (*myUnits).got_Extractor = 0;
     }
 
     if (unit->getType() == BWAPI::UnitTypes::Zerg_Lair) {
-        got_Lair = 0;
-        number_Hatchery -= 1;
+        (*myUnits).got_Lair = 0;
+        (*myUnits).number_Hatchery -= 1;
     }
 
     if (unit->getType() == BWAPI::UnitTypes::Zerg_Hatchery) {
-        number_Hatchery -= 1;
+        (*myUnits).number_Hatchery -= 1;
     }
 
 
 
     if (unit->getType() == BWAPI::UnitTypes::Zerg_Hydralisk_Den) {
-        got_Hydra_Den = 0;
+        (*myUnits).got_Hydra_Den = 0;
     }
 
     if (unit->getType() == BWAPI::UnitTypes::Zerg_Evolution_Chamber) {
-        if (got_Evolution_Chamber == 3){
-            got_Evolution_Chamber = 0;
+        if ((*myUnits).got_Evolution_Chamber == 3){
+            (*myUnits).got_Evolution_Chamber = 0;
         }
         else {
-            got_Evolution_Chamber = 0;
+            (*myUnits).got_Evolution_Chamber = 0;
         }
     }
 }
@@ -701,3 +466,4 @@ void StarterBot::onUnitRenegade(BWAPI::Unit unit)
 { 
 	
 }
+    
