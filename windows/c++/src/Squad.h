@@ -4,6 +4,10 @@
 #include <BWAPI.h>
 #include "StarterBot.h"
 
+struct UnitCount;
+
+//UnitCount* myUnits;
+
 class Squad{
 public:
 	Squad();

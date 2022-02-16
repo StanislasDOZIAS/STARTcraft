@@ -7,10 +7,22 @@ bool MicroGestion::buildBuilding(BWAPI::UnitType building, BWAPI::TilePosition d
         return false;
     }
     std::cout << "building : " << building << std::endl;
+
     int maxBuildRange = 64;
     bool buildOnCreep = building.requiresCreep();
     BWAPI::TilePosition buildPos = BWAPI::Broodwar->getBuildLocation(building, desiredPos, maxBuildRange, buildOnCreep);
-    return builder->build(building, buildPos);
+
+    if (builder->build(building, buildPos)) {
+        (*myUnits).unitBuilding[building] = 1;
+        (*myUnits).blocked_minerals += building.mineralPrice();
+        (*myUnits).blocked_gas += building.gasPrice();
+        (*myUnits).building_frame_count = 0;
+        (*myUnits).building_in_progress = building;
+        return true;
+    }
+    else {
+        return false;
+    }
 }
 
 BWAPI::Unit MicroGestion::getBuilder() {

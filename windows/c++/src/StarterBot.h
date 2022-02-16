@@ -9,6 +9,7 @@
 
 //forward declaration needed for compilation
 struct UnitCount;
+//UnitCount* myUnits;
 
 class StarterBot{
     MapTools m_mapTools;
@@ -50,6 +51,6 @@ public:
 	bool unitInSquad(BWAPI::Unit unit);
 
 private:
-	UnitCount* myUnits;
+	//UnitCount* myUnits;
 	std::list<Squad*> mySquads;
 };
