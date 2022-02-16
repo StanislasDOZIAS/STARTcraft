@@ -13,6 +13,10 @@ namespace Actions {
 
 	void ExpendBase_1(UnitCount& myUnits, std::list<Squad*>& mySquads);
 
+	void Building_tree(UnitCount& myUnits, std::list<Squad*>& mySquads);
+
+	void Economy(UnitCount& myUnits, std::list<Squad*>& mySquads);
+
 	void BaseArmy(UnitCount& myUnits, std::list<Squad*>& mySquads);
 }
 

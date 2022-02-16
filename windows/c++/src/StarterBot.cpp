@@ -89,7 +89,9 @@ void StarterBot::onFrame()
     // Count our units
     //countUnits();
     countUnits(BWAPI::Broodwar, *myUnits);
-    Actions::ExpendBase_1((*myUnits), mySquads);
+    //Actions::ExpendBase_1((*myUnits), mySquads);
+    Actions::Economy((*myUnits), mySquads);
+    Actions::Building_tree((*myUnits), mySquads);
     Actions::BaseArmy((*myUnits), mySquads);
 
     // Build Tech building
@@ -404,6 +406,10 @@ void StarterBot::onUnitDestroy(BWAPI::Unit unit)
         else {
             (*myUnits).got_Evolution_Chamber = 0;
         }
+    }
+    
+    for (Squad *squad : mySquads) {
+        squad->countSquadUnits();
     }
 }
 

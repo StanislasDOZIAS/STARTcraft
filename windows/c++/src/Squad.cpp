@@ -105,20 +105,25 @@ void Squad::countSquadUnits() {
 	hydraOwned = 0;
 	lurkerOwned = 0;
 	for (BWAPI::Unit unit : Units) {
-		if (unit->getType() == BWAPI::UnitTypes::Zerg_Drone) {
-			droneOwned += 1;
-		}
-		if (unit->getType() == BWAPI::UnitTypes::Zerg_Zergling) {
-			zerglingOwned += 1;
-		}
-		if (unit->getType() == BWAPI::UnitTypes::Zerg_Hydralisk) {
-			hydraOwned += 1;
-		}
-		if (unit->getType() == BWAPI::UnitTypes::Zerg_Lurker) {
-			lurkerOwned += 1;
+		if (unit->exists()) {
+			if (unit->getType() == BWAPI::UnitTypes::Zerg_Drone) {
+				droneOwned += 1;
+			}
+			if (unit->getType() == BWAPI::UnitTypes::Zerg_Zergling) {
+				zerglingOwned += 1;
+			}
+			if (unit->getType() == BWAPI::UnitTypes::Zerg_Hydralisk) {
+				hydraOwned += 1;
+			}
+			if (unit->getType() == BWAPI::UnitTypes::Zerg_Lurker) {
+				lurkerOwned += 1;
+			}
 		}
 	}
 }
+
+
+
 
 WorkerSquad::WorkerSquad(int size){
 	Units.resize(0);
