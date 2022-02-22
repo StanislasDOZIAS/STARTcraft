@@ -7,6 +7,8 @@
 
 struct UnitCount;
 
+extern UnitCount* myUnits;
+
 class Squad;
 
 namespace Actions {

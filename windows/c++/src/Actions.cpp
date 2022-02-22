@@ -22,10 +22,10 @@ void Actions::BaseArmy(std::list<Squad*>& mySquads) {
 void Actions::Building_tree(std::list<Squad*>& mySquads) {
 
     BWAPI::TilePosition desiredPos = BWAPI::Broodwar->self()->getStartLocation();
-
-    if (((*myUnits).unitMorphing[BWAPI::UnitTypes::Zerg_Hatchery] == 0) && (BWAPI::Broodwar->self()->minerals() >= BWAPI::UnitTypes::Zerg_Hatchery.mineralPrice() * (*myUnits).number_Hatchery + (*myUnits).blocked_minerals) &&
-        MicroGestion::buildBuilding(BWAPI::UnitTypes::Zerg_Hatchery, desiredPos)) {
-        (*myUnits).unitMorphing[BWAPI::UnitTypes::Zerg_Hatchery] = 1;
+    if (((*myUnits).unitMorphing[BWAPI::UnitTypes::Zerg_Hatchery] == 0) && (BWAPI::Broodwar->self()->minerals() >= BWAPI::UnitTypes::Zerg_Hatchery.mineralPrice() * (*myUnits).number_Hatchery + (*myUnits).blocked_minerals)) {
+        if (MicroGestion::buildBuilding(BWAPI::UnitTypes::Zerg_Hatchery, desiredPos)) {
+            (*myUnits).unitMorphing[int(BWAPI::UnitTypes::Zerg_Hatchery)] = 1;
+        }
     }
 
      // We will follow the following Tech tree Building :
@@ -43,12 +43,14 @@ void Actions::Building_tree(std::list<Squad*>& mySquads) {
     }
 
 
-
+    //std::cout << ((*myUnits).unitBuilding[BWAPI::UnitTypes::Zerg_Lair] == 0) << "   " << ((*myUnits).unitBuilding[BWAPI::UnitTypes::Zerg_Spawning_Pool] == 3) << "    " << (BWAPI::Broodwar->self()->minerals() >= BWAPI::UnitTypes::Zerg_Lair.mineralPrice() + (*myUnits).blocked_minerals) << "    " << (BWAPI::Broodwar->self()->gas() >= BWAPI::UnitTypes::Zerg_Lair.gasPrice() + (*myUnits).blocked_gas) << std::endl;
     if (((*myUnits).unitBuilding[BWAPI::UnitTypes::Zerg_Lair] == 0) && ((*myUnits).unitBuilding[BWAPI::UnitTypes::Zerg_Spawning_Pool] == 3) &&
         (BWAPI::Broodwar->self()->minerals() >= BWAPI::UnitTypes::Zerg_Lair.mineralPrice() + (*myUnits).blocked_minerals) && (BWAPI::Broodwar->self()->gas() >= BWAPI::UnitTypes::Zerg_Lair.gasPrice() + (*myUnits).blocked_gas)) {
         for (BWAPI::Unit u : BWAPI::Broodwar->self()->getUnits()) {
             if (u->getType() == BWAPI::UnitTypes::Zerg_Hatchery) {
+                std::cout << BWAPI::Broodwar->self()->minerals() << "   " << BWAPI::Broodwar->self()->gas() << std::endl;
                 u->morph(BWAPI::UnitTypes::Zerg_Lair);
+                std::cout << u->getType() << std::endl;
                 (*myUnits).unitBuilding[BWAPI::UnitTypes::Zerg_Lair] = 2;
                 break;
             }
@@ -248,7 +250,7 @@ void enlistUnit(Squad* squad, std::list<Squad*>& mySquads) {
             if (u->getType() == BWAPI::UnitTypes::Zerg_Drone) {
                 squad->add_Unit(u);
             }
-            else if (u->getType() == BWAPI::UnitTypes::Zerg_Larva) {
+            else if (u->getType() == BWAPI::UnitTypes::Zerg_Larva && BWAPI::Broodwar->self()->minerals() > BWAPI::UnitTypes::Zerg_Drone.mineralPrice() + (*myUnits).blocked_minerals) {
                 u->morph(BWAPI::UnitTypes::Zerg_Drone);
             }
         }
@@ -261,7 +263,7 @@ void enlistUnit(Squad* squad, std::list<Squad*>& mySquads) {
             if (u->getType() == BWAPI::UnitTypes::Zerg_Zergling) {
                 squad->add_Unit(u);
             }
-            else if (u->getType() == BWAPI::UnitTypes::Zerg_Larva) {
+            else if (u->getType() == BWAPI::UnitTypes::Zerg_Larva && BWAPI::Broodwar->self()->minerals() > BWAPI::UnitTypes::Zerg_Drone.mineralPrice() + (*myUnits).blocked_minerals && BWAPI::Broodwar->self()->gas() > BWAPI::UnitTypes::Zerg_Drone.gasPrice() + (*myUnits).blocked_gas) {
                 u->morph(BWAPI::UnitTypes::Zerg_Zergling);
             }
         }

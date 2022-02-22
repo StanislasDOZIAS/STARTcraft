@@ -19,20 +19,20 @@ struct UnitCount {
 
     // The upgrade we have
 
-    int tech[BWAPI::TechTypes::Unknown];
-    int upgrades[BWAPI::UpgradeTypes::Unknown];
+    int tech[int(BWAPI::TechTypes::Unknown)];
+    int upgrades[int(BWAPI::UpgradeTypes::Unknown)];
 
     // The Unit we want
 
-    int unitWanted[BWAPI::UnitTypes::Unknown];
+    int unitWanted[int(BWAPI::UnitTypes::Unknown)];
 
 
 
     // The Combat Units we owne
 
-    int unitOwned[BWAPI::UnitTypes::Unknown];
+    int unitOwned[int(BWAPI::UnitTypes::Unknown)];
 
-    int unitMorphing[BWAPI::UnitTypes::Unknown];
+    int unitMorphing[int(BWAPI::UnitTypes::Unknown)];
 
     int supplyAvailable;
 

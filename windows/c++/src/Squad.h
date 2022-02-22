@@ -6,7 +6,7 @@
 
 struct UnitCount;
 
-//UnitCount* myUnits;
+extern UnitCount* myUnits;
 
 class Squad{
 public:

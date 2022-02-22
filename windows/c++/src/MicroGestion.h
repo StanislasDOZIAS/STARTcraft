@@ -3,7 +3,7 @@
 #include "Scenario.h"
 struct UnitCount;
 
-//UnitCount* myUnits;
+extern UnitCount* myUnits;
 
 
 namespace MicroGestion {

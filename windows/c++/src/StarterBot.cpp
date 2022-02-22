@@ -50,6 +50,7 @@ void StarterBot::onFrame()
     Actions::Building_tree(mySquads);
     Actions::Economy(mySquads);
     Actions::BaseArmy(mySquads);
+    
 
     // Build Tech building
     //buildTechBuilding();
@@ -62,6 +63,8 @@ void StarterBot::onFrame()
     morphFromCombatUnit();
 
     attackStartLocations();
+
+    //std::cout << myUnits->unitWanted[BWAPI::UnitTypes::Zerg_Drone] << std::endl;
 
     // To morph from larva we need to have a larva
     if ((*myUnits).larva != nullptr) {

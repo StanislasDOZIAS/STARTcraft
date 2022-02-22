@@ -9,7 +9,7 @@
 
 //forward declaration needed for compilation
 struct UnitCount;
-//UnitCount* myUnits;
+extern UnitCount* myUnits;
 
 class StarterBot{
     MapTools m_mapTools;

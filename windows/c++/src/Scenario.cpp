@@ -15,12 +15,14 @@ void countUnits(BWAPI::GameWrapper& Broodwar)
     const BWAPI::Unitset& myListUnits = BWAPI::Broodwar->self()->getUnits();
 
     // Reset the units
+    int temp_hatchery = (*myUnits).unitMorphing[int(BWAPI::UnitTypes::Zerg_Hatchery)];
+    memset((*myUnits).unitOwned, 0, 4*int(BWAPI::UnitTypes::Unknown));
+    memset((*myUnits).unitMorphing, 0, 4 * int(BWAPI::UnitTypes::Unknown));
+    (*myUnits).unitMorphing[int(BWAPI::UnitTypes::Zerg_Lurker)] = 0;
+    (*myUnits).unitOwned[int(BWAPI::UnitTypes::Zerg_Lurker)] = 0;
 
-    memset((*myUnits).unitOwned, 0, BWAPI::UnitTypes::Unknown);
-    memset((*myUnits).unitMorphing, 0, BWAPI::UnitTypes::Unknown);
-    (*myUnits).unitMorphing[BWAPI::UnitTypes::Zerg_Lurker] = 0;
-    (*myUnits).unitOwned[BWAPI::UnitTypes::Zerg_Lurker] = 0;
 
+    //(*myUnits).number_Hatchery = 1;
     (*myUnits).supplyAvailable = 0;
 
     // Detect failed building
@@ -29,7 +31,7 @@ void countUnits(BWAPI::GameWrapper& Broodwar)
         (*myUnits).blocked_minerals -= (*myUnits).building_in_progress.mineralPrice();
         (*myUnits).blocked_gas -= (*myUnits).building_in_progress.gasPrice();
         if ((*myUnits).building_in_progress == BWAPI::UnitTypes::Zerg_Hatchery) {
-            (*myUnits).unitMorphing[BWAPI::UnitTypes::Zerg_Hatchery] = 0;
+            temp_hatchery = 0;
         }
         else {
             (*myUnits).unitBuilding[(*myUnits).building_in_progress] = 0;
@@ -49,13 +51,14 @@ void countUnits(BWAPI::GameWrapper& Broodwar)
                         (*myUnits).building_in_progress = BWAPI::UnitTypes::Unknown;
                     }
                     (*myUnits).unitBuilding[unit->getType()] = 2;
-
                 }
-
+                else {
+                    (*myUnits).unitBuilding[unit->getType()] = 3;
+                }
             }
-            else if (((*myUnits).unitMorphing[BWAPI::UnitTypes::Zerg_Hatchery] == 1) && (unit->getType() == BWAPI::UnitTypes::Zerg_Hatchery) && (unit->isBeingConstructed()))
+            else if ((temp_hatchery == 1) && (unit->getType() == BWAPI::UnitTypes::Zerg_Hatchery) && (unit->isBeingConstructed()))
             {
-                (*myUnits).unitMorphing[BWAPI::UnitTypes::Zerg_Hatchery] = 0;
+                temp_hatchery = 0;
                 (*myUnits).blocked_minerals -= BWAPI::UnitTypes::Zerg_Hatchery.mineralPrice();
                 (*myUnits).number_Hatchery += 1;
                 (*myUnits).building_in_progress = BWAPI::UnitTypes::Unknown;
@@ -80,6 +83,10 @@ void countUnits(BWAPI::GameWrapper& Broodwar)
 
             if (unit->getType() == BWAPI::UnitTypes::Zerg_Larva) {
                 (*myUnits).larva = unit;
+            }
+
+            if (unit->getType() == BWAPI::UnitTypes::Zerg_Hydralisk) {
+                (*myUnits).hydra = unit;
             }
 
             if (unit->getType() == BWAPI::UnitTypes::Zerg_Drone) {
@@ -110,6 +117,8 @@ void countUnits(BWAPI::GameWrapper& Broodwar)
             }
         }
     }
+    
+    (*myUnits).unitMorphing[int(BWAPI::UnitTypes::Zerg_Hatchery)] = temp_hatchery;
 }
 
 UnitCount::UnitCount(){
@@ -117,14 +126,19 @@ UnitCount::UnitCount(){
     building_frame_count = 0;
     max_frame_building = 24 * 10;
     building_in_progress = BWAPI::UnitTypes::Unknown;
+    number_Hatchery = 1;
+    blocked_minerals = 0;
+    blocked_gas = 0;
+    larva = nullptr;
+    hydra = nullptr;
 
-    memset(unitBuilding, 0, BWAPI::UnitTypes::Unknown);
-    memset(unitOwned, 0, BWAPI::UnitTypes::Unknown);
-    memset(unitMorphing, 0, BWAPI::UnitTypes::Unknown);
-    memset(tech, 0, BWAPI::TechTypes::Unknown);
-    memset(upgrades, 0, BWAPI::UpgradeTypes::Unknown);
+    std::memset(unitBuilding, 0, 4*int(BWAPI::UnitTypes::Unknown));
+    std::memset(unitOwned, 0, 4*int(BWAPI::UnitTypes::Unknown));
+    std::memset(unitMorphing, 0, 4*int(BWAPI::UnitTypes::Unknown)+3);
+    std::memset(tech, 0, 4*int(BWAPI::TechTypes::Unknown));
+    std::memset(upgrades, 0, 4*int(BWAPI::UpgradeTypes::Unknown));
 
-    memset(unitWanted, 0, BWAPI::UnitTypes::Unknown);
+    std::memset(unitWanted, 0, 4*int(BWAPI::UnitTypes::Unknown));
     unitWanted[BWAPI::UnitTypes::Zerg_Drone] = 20;
     unitWanted[BWAPI::UnitTypes::Zerg_Zergling] = 50;
     unitWanted[BWAPI::UnitTypes::Zerg_Hydralisk] = 20;
