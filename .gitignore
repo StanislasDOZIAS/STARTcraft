@@ -29,3 +29,4 @@ windows/starcraft/*.mpq
 *.map
 *.pdb
 *.ilk
+windows/bin/StarterBot_d.exe
