@@ -35,22 +35,32 @@ int Squad::get_Squad_size()
 	return Squad_size;
 }
 
+BWAPI::Unit Squad::remove_Unit(BWAPI::UnitType& Type) {
+	for (BWAPI::Unit unit : Units) {
+		if (unit->getType() == Type && (unit->exists())){
+			Units.remove(unit);
+			Squad_size -= 1;
+			return unit;
+		}
+	}
+	return nullptr;
+}
+
+
 void Squad::add_Unit(BWAPI::Unit& Unit){
 	if (Unit->getType() != BWAPI::UnitTypes::Zerg_Larva) {
-		for (BWAPI::Unit u : Units) {
-		}
 		Units.push_back(Unit);
 		Squad_size += 1;
 	}
 }
 
 void Squad::move(BWAPI::Position position){
-	for (int i = 0; i < Squad_size; i++) {
-		Units[i]->move(position);
+	for (BWAPI::Unit unit : Units) {
+		unit->move(position);
 	}
 }
 
-std::vector<BWAPI::Unit>& Squad::get_Units(){
+std::list<BWAPI::Unit>& Squad::get_Units(){
 	return Units;
 }
 

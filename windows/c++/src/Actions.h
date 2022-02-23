@@ -12,16 +12,19 @@ extern UnitCount* myUnits;
 class Squad;
 
 namespace Actions {
-	void CreateNewBase(BWAPI::Position position, Squad& squad);
-
-	void Building_tree(std::list<Squad*>& mySquads);
+	void buildAdditionalSupply();
 
 	void Economy(std::list<Squad*>& mySquads);
+
+	void Building_tree(std::list<Squad*>& mySquads);
 
 	void BaseArmy(std::list<Squad*>& mySquads);
 }
 
+
 void getUnit(BWAPI::UnitType type, std::list<Squad*>& mySquads, BWAPI::Unit& unity);
+
+int transfer_squad(Squad& origin_Squad, Squad& destination_Squad, BWAPI::UnitType Type, int number);
 
 bool unitInSquad(BWAPI::Unit& unit, std::list<Squad*>& mySquads);
 

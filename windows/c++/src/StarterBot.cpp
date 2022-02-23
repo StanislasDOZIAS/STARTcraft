@@ -47,6 +47,7 @@ void StarterBot::onFrame()
     // Count our units
     //countUnits();
     countUnits(BWAPI::Broodwar);
+    Actions::buildAdditionalSupply();
     Actions::Building_tree(mySquads);
     Actions::Economy(mySquads);
     Actions::BaseArmy(mySquads);
@@ -57,70 +58,8 @@ void StarterBot::onFrame()
     attackStartLocations();
 
     (*myUnits).building_frame_count += 1;
-
-    // To morph from larva we need to have a larva
-    if ((*myUnits).larva != nullptr) {
-        // Build more supply if we are going to run out soon
-        if (buildAdditionalSupply()) {
-            return;
-        }
-
-        // Train more workers so we can gather more income
-        if (trainAdditionalWorkers()) {
-            return;
-        }
-
-        // Build units
-        if (builAdditionalUnits()) {
-            return;
-        }
-    }
 }
 
-
-
-// Train more workers so we can gather more income
-bool StarterBot::trainAdditionalWorkers()
-{
-    const BWAPI::UnitType workerType = BWAPI::Broodwar->self()->getRace().getWorker();
-
-    if (((*myUnits).unitOwned[BWAPI::UnitTypes::Zerg_Drone] + (*myUnits).unitMorphing[BWAPI::UnitTypes::Zerg_Drone] < (*myUnits).unitWanted[BWAPI::UnitTypes::Zerg_Drone]) &&
-        (BWAPI::Broodwar->self()->minerals() >= workerType.mineralPrice() + (*myUnits).blocked_minerals)) {
-        if ((*myUnits).larva->train(BWAPI::UnitTypes::Zerg_Drone)) {
-            return true;
-        }
-    }
-
-    return false;
-}
-
-
-// Build more supply if we are going to run out soon
-bool StarterBot::buildAdditionalSupply()
-{
-    const int supply_Used = BWAPI::Broodwar->self()->supplyUsed();
-
-    // If we have a sufficient amount of supply, we don't need to do anything
-    if (((*myUnits).supplyAvailable - supply_Used < 4) && ((*myUnits).supplyAvailable < 400)) {
-        // We don't authorize multiple overlords if supply_used <= 34 (i.e. 17)
-        if (supply_Used <= 34) {
-            if ((BWAPI::Broodwar->self()->minerals() >= BWAPI::UnitTypes::Zerg_Overlord.mineralPrice() + (*myUnits).blocked_minerals) && ((*myUnits).larva != nullptr) && ((*myUnits).unitMorphing[BWAPI::UnitTypes::Zerg_Overlord] == 0)) {
-                if ((*myUnits).larva->train(BWAPI::UnitTypes::Zerg_Overlord)) {
-                    return true;
-                }
-            }
-        }
-        // We authorize 1 morphing overlord if supply_used > 34 (i.e. 17)
-        else {
-            if ((BWAPI::Broodwar->self()->minerals() >= BWAPI::UnitTypes::Zerg_Overlord.mineralPrice() + (*myUnits).blocked_minerals) && ((*myUnits).larva != nullptr) && ((*myUnits).unitMorphing[BWAPI::UnitTypes::Zerg_Overlord] <= 1)) {
-                if ((*myUnits).larva->train(BWAPI::UnitTypes::Zerg_Overlord)) {
-                    return true;
-                }
-            }
-        }
-    }
-    return false;
-}
 
 // Train more combat units so we can fight people
 bool StarterBot::builAdditionalUnits()

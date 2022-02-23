@@ -1,14 +1,65 @@
 #include "Actions.h"
 
+// Build more supply if we are going to run out soon
+void Actions::buildAdditionalSupply()
+{
+    if ((*myUnits).larva == nullptr) {
+        return;
+    }
 
-void Actions::CreateNewBase(BWAPI::Position position, Squad& squad) {
-    squad.move(position);
-    for (BWAPI::Unit unit : squad.get_Units()) {
-        if (unit->getType() == BWAPI::UnitTypes::Zerg_Overlord) {
-            unit->build(BWAPI::UnitTypes::Zerg_Hatchery, BWAPI::TilePosition(position));
+    const int supply_Used = BWAPI::Broodwar->self()->supplyUsed();
+    // If we have a sufficient amount of supply, we don't need to do anything
+    if (((*myUnits).supplyAvailable - supply_Used < 4) && ((*myUnits).supplyAvailable < 400)) {
+        // We don't authorize multiple overlords if supply_used <= 34 (i.e. 17)
+        if (supply_Used <= 34) {
+            if ((BWAPI::Broodwar->self()->minerals() >= BWAPI::UnitTypes::Zerg_Overlord.mineralPrice() + (*myUnits).blocked_minerals) && ((*myUnits).larva != nullptr) && ((*myUnits).unitMorphing[BWAPI::UnitTypes::Zerg_Overlord] == 0)) {
+                if ((*myUnits).larva->train(BWAPI::UnitTypes::Zerg_Overlord)) {
+                    (*myUnits).larva = nullptr;
+                }
+            }
+        }
+        // We authorize 1 morphing overlord if supply_used > 34 (i.e. 17)
+        else {
+            if ((BWAPI::Broodwar->self()->minerals() >= BWAPI::UnitTypes::Zerg_Overlord.mineralPrice() + (*myUnits).blocked_minerals) && ((*myUnits).larva != nullptr) && ((*myUnits).unitMorphing[BWAPI::UnitTypes::Zerg_Overlord] <= 1)) {
+                if ((*myUnits).larva->train(BWAPI::UnitTypes::Zerg_Overlord)) {
+                    (*myUnits).larva = nullptr;
+                }
+            }
         }
     }
 }
+
+void Actions::Economy(std::list<Squad*>& mySquads) {
+    //BWAPI::Unit builder = nullptr;
+    int ActionId = 1;
+    Squad* gaz;
+    Squad* mineral;
+    mineral = getSquad(1, ActionId, mySquads, 15);
+    mineral->countSquadUnits();
+
+    BWAPI::Unit Extractor;
+    getUnit(BWAPI::UnitTypes::Zerg_Extractor, mySquads, Extractor);
+    for (BWAPI::Unit u : mineral->get_Units()) {
+        BWAPI::Unit closestMineral = Tools::GetClosestUnitTo(u, BWAPI::Broodwar->getMinerals());
+
+        // If a valid mineral was found, right click it with the unit in order to start harvesting
+        if (closestMineral && u->isIdle()) { u->rightClick(closestMineral); }
+    }
+
+    if (Extractor != nullptr) {
+        if ((Extractor->getType() == BWAPI::UnitTypes::Zerg_Extractor) && (Extractor->isCompleted())) {
+            gaz = getSquad(1, 2, mySquads, 4);
+            if (gaz->get_Squad_size() < 4) {
+                std::cout << transfer_squad(*mineral, *gaz, BWAPI::UnitTypes::Zerg_Drone, 4 - gaz->get_Squad_size());
+            }
+            //std::cout << "gaz : " << gaz->get_Units().size() << std::endl;
+            for (BWAPI::Unit u : gaz->get_Units()) {
+                if (u->isIdle() || u->isGatheringMinerals()) { u->rightClick(Extractor); }
+            }
+        }
+    }
+}
+
 
 void Actions::BaseArmy(std::list<Squad*>& mySquads) {
     Squad* Zerglings;
@@ -144,40 +195,9 @@ void Actions::Building_tree(std::list<Squad*>& mySquads) {
     }
 }
 
-void Actions::Economy(std::list<Squad*>& mySquads) {
-    //BWAPI::Unit builder = nullptr;
-    int ActionId = 1;
-    Squad* gaz;
-    Squad* mineral;
-    mineral = getSquad(1, ActionId, mySquads, 15);
-    mineral->countSquadUnits();
-    if ((*myUnits).supplyAvailable < (*myUnits).UsedSupply - 4) {
-        std::cout << "we need overlords ! " << std::endl;
-        BWAPI::Unit u;
-        getUnit(BWAPI::UnitTypes::Zerg_Larva, mySquads, u);
-        u->morph(BWAPI::UnitTypes::Zerg_Overlord);
-    }
-    BWAPI::Unit Extractor;
-    getUnit(BWAPI::UnitTypes::Zerg_Extractor, mySquads, Extractor);
-    for (BWAPI::Unit u : mineral->get_Units()) {
-        BWAPI::Unit closestMineral = Tools::GetClosestUnitTo(u, BWAPI::Broodwar->getMinerals());
 
-        // If a valid mineral was found, right click it with the unit in order to start harvesting
-        if (closestMineral && u->isIdle()) { u->rightClick(closestMineral); }
-    }
 
-    if (Extractor != nullptr) {
-        if (Extractor->getType() == BWAPI::UnitTypes::Zerg_Extractor) {
-            gaz = getSquad(1, 2, mySquads, 4);
-            //std::cout << "gaz : " << gaz->get_Units().size() << std::endl;
-            for (BWAPI::Unit u : gaz->get_Units()) {
-                if (u->isIdle() || u->isGatheringMinerals()) { u->rightClick(Extractor); }
-            }
-        }
-    }
-}
-
-//Renvoie une unité libre (ds aucune squad)
+//Return a free unit (in no squad)
 void getUnit(BWAPI::UnitType type, std::list<Squad*>& mySquads, BWAPI::Unit& unity) {
     bool found_unit = false;
     for (BWAPI::Unit u : BWAPI::Broodwar->self()->getUnits()) {
@@ -201,6 +221,21 @@ void getUnit(BWAPI::UnitType type, std::list<Squad*>& mySquads, BWAPI::Unit& uni
     //return (*myUnits).larva;
 }
 
+
+int transfer_squad(Squad& origin_Squad, Squad& destination_Squad, BWAPI::UnitType Type, int number) {
+    int res = 0;
+    while (res < number) {
+        BWAPI::Unit transfered_unit = origin_Squad.remove_Unit(Type);
+        if (transfered_unit != nullptr) {
+            destination_Squad.add_Unit(transfered_unit);
+            res += 1;
+        }
+        else {
+            return res;
+        }
+    }
+    return res;
+}
 
 
 bool unitInSquad(BWAPI::Unit& unit, std::list<Squad*>& mySquads) {
@@ -238,6 +273,11 @@ Squad* getSquad(int Squad_type, int ActionId, std::list<Squad*>& mySquads, int s
     mySquads.push_back(newSquad);
     return newSquad;
 }
+
+
+
+
+// create the unit wanted for the squad
 
 void enlistUnit(Squad* squad, std::list<Squad*>& mySquads) {
     squad->countSquadUnits();

@@ -18,15 +18,8 @@ public:
 
     StarterBot();
 
-    // helper functions to get you started with bot programming and learn the API
-	//void countUnits();
-    bool trainAdditionalWorkers();
-    bool buildAdditionalSupply();
 	bool builAdditionalUnits();
 	void morphFromCombatUnit();
-	//bool buildBuilding(BWAPI::UnitType);
-	//void buildAdditionalHatch();
-	//void buildTechBuilding();
 	void attackStartLocations();
 	void drawDebugInformation();
 

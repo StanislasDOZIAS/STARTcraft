@@ -24,9 +24,10 @@ public:
 	int get_hydraOwned();
 	int get_lurkerOwned();
 	void add_Unit(BWAPI::Unit& Unit);
+	BWAPI::Unit remove_Unit(BWAPI::UnitType& Type);
 	void move(BWAPI::Position postion);
 	void changeAction(int ActionId);
-	std::vector<BWAPI::Unit>& get_Units();
+	std::list<BWAPI::Unit>& get_Units();
 	void countSquadUnits();
 
 protected :
@@ -41,7 +42,7 @@ protected :
 	int zerglingOwned;
 	int hydraOwned;
 	int lurkerOwned;
-	std::vector<BWAPI::Unit> Units;
+	std::list<BWAPI::Unit> Units;
 };
 
 class WorkerSquad : public Squad {
