@@ -20,7 +20,6 @@ public:
 
     // helper functions to get you started with bot programming and learn the API
 	//void countUnits();
-	void sendWorkersToGaz(BWAPI::Unit);
     bool trainAdditionalWorkers();
     bool buildAdditionalSupply();
 	bool builAdditionalUnits();

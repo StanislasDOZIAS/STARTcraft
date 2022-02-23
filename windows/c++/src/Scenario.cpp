@@ -17,9 +17,7 @@ void countUnits(BWAPI::GameWrapper& Broodwar)
     // Reset the units
     int temp_hatchery = (*myUnits).unitMorphing[int(BWAPI::UnitTypes::Zerg_Hatchery)];
     memset((*myUnits).unitOwned, 0, 4*int(BWAPI::UnitTypes::Unknown));
-    memset((*myUnits).unitMorphing, 0, 4 * int(BWAPI::UnitTypes::Unknown));
-    (*myUnits).unitMorphing[int(BWAPI::UnitTypes::Zerg_Lurker)] = 0;
-    (*myUnits).unitOwned[int(BWAPI::UnitTypes::Zerg_Lurker)] = 0;
+    memset((*myUnits).unitMorphing, 0, 4*int(BWAPI::UnitTypes::Unknown));
 
 
     //(*myUnits).number_Hatchery = 1;
@@ -27,7 +25,7 @@ void countUnits(BWAPI::GameWrapper& Broodwar)
 
     // Detect failed building
 
-    if ((*myUnits).building_frame_count > (*myUnits).max_frame_building) {
+    if (((*myUnits).building_in_progress != BWAPI::UnitTypes::Unknown ) && ((*myUnits).building_frame_count > (*myUnits).max_frame_building)) {
         (*myUnits).blocked_minerals -= (*myUnits).building_in_progress.mineralPrice();
         (*myUnits).blocked_gas -= (*myUnits).building_in_progress.gasPrice();
         if ((*myUnits).building_in_progress == BWAPI::UnitTypes::Zerg_Hatchery) {

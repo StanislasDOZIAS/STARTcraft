@@ -1,8 +1,6 @@
 #include "Actions.h"
 
 
-
-
 void Actions::CreateNewBase(BWAPI::Position position, Squad& squad) {
     squad.move(position);
     for (BWAPI::Unit unit : squad.get_Units()) {
