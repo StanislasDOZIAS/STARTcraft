@@ -1,6 +1,7 @@
 #include "StarterBot.h"
 #include "Tools.h"
 #include "MapTools.h"
+#include "Actions.h"
 #include <iostream>
 
 StarterBot::StarterBot() {
@@ -45,11 +46,23 @@ void StarterBot::onFrame()
     //int* Actions = Scenario(BWAPI::Broodwar, myUnits, this);
 
     // Count our units
-    //countUnits();
     countUnits(BWAPI::Broodwar);
+
+    nextLarvaMorph(BWAPI::Broodwar);
+
+    // Build Supplies
     Actions::buildAdditionalSupply();
+
+   // Use Larva
+    Actions::morphFromLarva();
+
+    // Advance in the tech tree
     Actions::Building_tree(mySquads);
+
+    //Manage the economy
     Actions::Economy(mySquads);
+
+    // Manage the army
     Actions::BaseArmy(mySquads);
 
     // To morph from combat unit
@@ -136,6 +149,10 @@ void StarterBot::onUnitDestroy(BWAPI::Unit unit)
     }
 
     if (unit->getType() == BWAPI::UnitTypes::Zerg_Hatchery) {
+        (*myUnits).number_Hatchery -= 1;
+    }
+
+    if (unit->getType() == BWAPI::UnitTypes::Zerg_Hive) {
         (*myUnits).number_Hatchery -= 1;
     }
 }

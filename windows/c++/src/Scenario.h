@@ -42,10 +42,12 @@ struct UnitCount {
     int UsedSupply;
 
 
-    // The only larva and hydra we need per frame
+    // The only larva and hydra we need per frame and the target for larva
     BWAPI::Unit larva;
     BWAPI::Unit hydra;
-    
+    BWAPI::UnitType nextUnitFromLarva;
+
+
     // The waiting frame to detect failed building
     int building_frame_count;
     int max_frame_building;
@@ -59,3 +61,5 @@ extern UnitCount* myUnits;
 int* Scenario(BWAPI::GameWrapper& Broodwar, std::list<Squad>& mySquads);
 
 void countUnits(BWAPI::GameWrapper& Broodwar);
+
+void nextLarvaMorph(BWAPI::GameWrapper& Broodwar);

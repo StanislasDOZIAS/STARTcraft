@@ -12,7 +12,6 @@ class Squad{
 public:
 	Squad();
 	Squad(int Squad_type, int size);
-	int get_Squad_size();
 	int get_type();
 	int get_Action();
 	int get_droneWanted();
@@ -24,14 +23,14 @@ public:
 	int get_hydraOwned();
 	int get_lurkerOwned();
 	void add_Unit(BWAPI::Unit& Unit);
-	BWAPI::Unit remove_Unit(BWAPI::UnitType& Type);
+	BWAPI::Unit Squad::remove_UnitType(BWAPI::UnitType& Type);
+	void Squad::remove_Unit(BWAPI::Unit unit);
 	void move(BWAPI::Position postion);
 	void changeAction(int ActionId);
 	std::list<BWAPI::Unit>& get_Units();
 	void countSquadUnits();
 
 protected :
-	int Squad_size;
 	int type;
 	int Action;
 	int droneWanted;

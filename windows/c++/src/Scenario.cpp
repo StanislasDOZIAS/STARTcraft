@@ -10,17 +10,12 @@ int* Scenario(BWAPI::GameWrapper& Broodwar, UnitCount& myUnits, std::list<Squad>
 
 void countUnits(BWAPI::GameWrapper& Broodwar)
 {
-    // Let's send all of our starting workers to the closest mineral to them
-    // First we need to loop over all of the units that we (BWAPI::Broodwar->self()) own
     const BWAPI::Unitset& myListUnits = BWAPI::Broodwar->self()->getUnits();
 
-    // Reset the units
+    // Reset the counters
     int temp_hatchery = (*myUnits).unitMorphing[int(BWAPI::UnitTypes::Zerg_Hatchery)];
     memset((*myUnits).unitOwned, 0, 4*int(BWAPI::UnitTypes::Unknown));
     memset((*myUnits).unitMorphing, 0, 4*int(BWAPI::UnitTypes::Unknown));
-
-
-    //(*myUnits).number_Hatchery = 1;
     (*myUnits).supplyAvailable = 0;
 
     // Detect failed building
@@ -119,6 +114,28 @@ void countUnits(BWAPI::GameWrapper& Broodwar)
     (*myUnits).unitMorphing[int(BWAPI::UnitTypes::Zerg_Hatchery)] = temp_hatchery;
 }
 
+void nextLarvaMorph(BWAPI::GameWrapper& Broodwar) {
+    if ((*myUnits).unitOwned[int(BWAPI::UnitTypes::Zerg_Drone)] + (*myUnits).unitMorphing[int(BWAPI::UnitTypes::Zerg_Drone)] < (*myUnits).unitWanted[int(BWAPI::UnitTypes::Zerg_Drone)]) {
+        (*myUnits).nextUnitFromLarva = BWAPI::UnitTypes::Zerg_Drone;
+    }
+
+    else if (((*myUnits).unitBuilding[int(BWAPI::UnitTypes::Zerg_Hydralisk_Den)] == 3) &&
+        ((*myUnits).unitOwned[int(BWAPI::UnitTypes::Zerg_Hydralisk)] + (*myUnits).unitMorphing[int(BWAPI::UnitTypes::Zerg_Hydralisk)] < (*myUnits).unitWanted[int(BWAPI::UnitTypes::Zerg_Hydralisk)])) {
+        (*myUnits).nextUnitFromLarva = BWAPI::UnitTypes::Zerg_Hydralisk;
+    }
+
+    else if (((*myUnits).unitBuilding[int(BWAPI::UnitTypes::Zerg_Spawning_Pool)] == 3) &&
+        ((*myUnits).unitOwned[int(BWAPI::UnitTypes::Zerg_Zergling)] + (*myUnits).unitMorphing[int(BWAPI::UnitTypes::Zerg_Zergling)] < (*myUnits).unitWanted[int(BWAPI::UnitTypes::Zerg_Zergling)])) {
+        (*myUnits).nextUnitFromLarva = BWAPI::UnitTypes::Zerg_Zergling;
+    }
+
+    else {
+        (*myUnits).nextUnitFromLarva = BWAPI::UnitTypes::Unknown;
+    }
+}
+
+
+
 UnitCount::UnitCount(){
 
     building_frame_count = 0;
@@ -129,6 +146,7 @@ UnitCount::UnitCount(){
     blocked_gas = 0;
     larva = nullptr;
     hydra = nullptr;
+    nextUnitFromLarva = BWAPI::UnitTypes::Unknown;
 
     std::memset(unitBuilding, 0, 4*int(BWAPI::UnitTypes::Unknown));
     std::memset(unitOwned, 0, 4*int(BWAPI::UnitTypes::Unknown));

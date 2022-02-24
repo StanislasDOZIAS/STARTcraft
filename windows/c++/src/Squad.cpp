@@ -2,7 +2,6 @@
 
 Squad::Squad() {
 	Units.resize(0);
-	Squad_size = 0;
 	type = 0;
 	Action = 0;
 	droneWanted = 0;
@@ -17,7 +16,6 @@ Squad::Squad() {
 
 Squad::Squad(int Squad_type, int size) {
 	Units.resize(0);
-	Squad_size = 0;
 	type = 0;
 	Action = 0;
 	droneWanted = 0;
@@ -30,27 +28,29 @@ Squad::Squad(int Squad_type, int size) {
 	lurkerOwned = 0;
 }
 
-int Squad::get_Squad_size()
-{
-	return Squad_size;
-}
 
-BWAPI::Unit Squad::remove_Unit(BWAPI::UnitType& Type) {
+BWAPI::Unit Squad::remove_UnitType(BWAPI::UnitType& Type) {
 	for (BWAPI::Unit unit : Units) {
 		if (unit->getType() == Type && (unit->exists())){
 			Units.remove(unit);
-			Squad_size -= 1;
 			return unit;
 		}
 	}
 	return nullptr;
 }
 
+void Squad::remove_Unit(BWAPI::Unit unit) {
+	for (BWAPI::Unit u : Units) {
+		if (unit->getID()==u->getID()) {
+			Units.remove(u);
+		}
+	}
+}
+
 
 void Squad::add_Unit(BWAPI::Unit& Unit){
 	if (Unit->getType() != BWAPI::UnitTypes::Zerg_Larva) {
 		Units.push_back(Unit);
-		Squad_size += 1;
 	}
 }
 
@@ -114,6 +114,7 @@ void Squad::countSquadUnits() {
 	zerglingOwned = 0;
 	hydraOwned = 0;
 	lurkerOwned = 0;
+	std::list<BWAPI::Unit> to_remove;
 	for (BWAPI::Unit unit : Units) {
 		if (unit->exists()) {
 			if (unit->getType() == BWAPI::UnitTypes::Zerg_Drone) {
@@ -129,7 +130,13 @@ void Squad::countSquadUnits() {
 				lurkerOwned += 1;
 			}
 		}
+		else {
+			to_remove.push_back(unit);
 		}
+		}
+	for(BWAPI::Unit unit : to_remove) {
+		Units.remove(unit);
+	}
 }
 
 WorkerSquad::WorkerSquad(int size){
