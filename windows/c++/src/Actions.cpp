@@ -42,14 +42,17 @@ void Actions::morphFromLarva() {
 
 void Actions::Economy(std::list<Squad*>& mySquads) {
     //BWAPI::Unit builder = nullptr;
-    int ActionId = 1;
-    Squad* gaz;
+    Squad* gas;
     Squad* mineral;
-    mineral = getSquad(1, ActionId, mySquads, 15);
-    mineral->countSquadUnits();
+    mineral = getSquad(1, 1, mySquads); //first 1 : squad of type worker, second 1 : squad which gather minerals
+    if (mineral == nullptr) {
+        mineral = new WorkerSquad((*myUnits).unitWanted[BWAPI::UnitTypes::Zerg_Drone]);
+        mineral->changeAction(1);
+        enlistUnit(mineral, mySquads);
+        mySquads.push_back(mineral);
+    }
 
-    BWAPI::Unit Extractor;
-    getUnit(BWAPI::UnitTypes::Zerg_Extractor, mySquads, Extractor);
+    mineral->countSquadUnits();
     for (BWAPI::Unit u : mineral->get_Units()) {
         BWAPI::Unit closestMineral = Tools::GetClosestUnitTo(u, BWAPI::Broodwar->getMinerals());
 
@@ -57,17 +60,21 @@ void Actions::Economy(std::list<Squad*>& mySquads) {
         if (closestMineral && u->isIdle()) { u->rightClick(closestMineral); }
     }
 
-    if (Extractor != nullptr) {
-        if ((Extractor->getType() == BWAPI::UnitTypes::Zerg_Extractor) && (Extractor->isCompleted())) {
-            gaz = getSquad(1, 2, mySquads, 4);
-            gaz->countSquadUnits();
-            if (gaz->get_Units().size() < 4) {
-                std::cout << transfer_squad(*mineral, *gaz, BWAPI::UnitTypes::Zerg_Drone, 4 - gaz->get_Units().size());
-            }
-            //std::cout << "gaz : " << gaz->get_Units().size() << std::endl;
-            for (BWAPI::Unit u : gaz->get_Units()) {
-                if (u->isIdle() || u->isGatheringMinerals()) { u->rightClick(Extractor); }
-            }
+    if ((*myUnits).unitBuilding[BWAPI::UnitTypes::Zerg_Extractor] == 3) {
+        BWAPI::Unit Extractor = Tools::GetUnitOfType(BWAPI::UnitTypes::Zerg_Extractor);
+        gas = getSquad(1, 2, mySquads); //1 : squad of type worker, 2 : squad which gather minerals
+        if (gas == nullptr) {
+            gas = new WorkerSquad(4);
+            gas->changeAction(2);
+            enlistUnit(gas, mySquads);
+            mySquads.push_back(gas);
+        }
+        gas->countSquadUnits();
+        if (gas->get_Units().size() < 4) {
+            transfer_squad(*mineral, *gas, BWAPI::UnitTypes::Zerg_Drone, 4 - gas->get_Units().size());
+        }
+        for (BWAPI::Unit u : gas->get_Units()) {
+            if (u->isIdle() || u->isGatheringMinerals()) { u->rightClick(Extractor); }
         }
     }
 }
@@ -96,16 +103,14 @@ void Actions::Building_tree(std::list<Squad*>& mySquads) {
     }
 
 
-    //std::cout << ((*myUnits).unitBuilding[BWAPI::UnitTypes::Zerg_Lair] == 0) << "   " << ((*myUnits).unitBuilding[BWAPI::UnitTypes::Zerg_Spawning_Pool] == 3) << "    " << (BWAPI::Broodwar->self()->minerals() >= BWAPI::UnitTypes::Zerg_Lair.mineralPrice() + (*myUnits).blocked_minerals) << "    " << (BWAPI::Broodwar->self()->gas() >= BWAPI::UnitTypes::Zerg_Lair.gasPrice() + (*myUnits).blocked_gas) << std::endl;
     if (((*myUnits).unitBuilding[BWAPI::UnitTypes::Zerg_Lair] == 0) && ((*myUnits).unitBuilding[BWAPI::UnitTypes::Zerg_Spawning_Pool] == 3) &&
         (BWAPI::Broodwar->self()->minerals() >= BWAPI::UnitTypes::Zerg_Lair.mineralPrice() + (*myUnits).blocked_minerals) && (BWAPI::Broodwar->self()->gas() >= BWAPI::UnitTypes::Zerg_Lair.gasPrice() + (*myUnits).blocked_gas)) {
         for (BWAPI::Unit u : BWAPI::Broodwar->self()->getUnits()) {
             if (u->getType() == BWAPI::UnitTypes::Zerg_Hatchery) {
-                std::cout << BWAPI::Broodwar->self()->minerals() << "   " << BWAPI::Broodwar->self()->gas() << std::endl;
-                u->morph(BWAPI::UnitTypes::Zerg_Lair);
-                std::cout << u->getType() << std::endl;
-                (*myUnits).unitBuilding[BWAPI::UnitTypes::Zerg_Lair] = 2;
-                break;
+                if (u->morph(BWAPI::UnitTypes::Zerg_Lair)) {
+                    (*myUnits).unitBuilding[BWAPI::UnitTypes::Zerg_Lair] = 2;
+                    break;
+                }
             }
         }
     }
@@ -148,7 +153,7 @@ void Actions::Building_tree(std::list<Squad*>& mySquads) {
         }
     }
 
-    if (((*myUnits).unitBuilding[BWAPI::UnitTypes::Zerg_Evolution_Chamber] == 0) && ((*myUnits).upgrades[BWAPI::UpgradeTypes::Muscular_Augments] == 1) &&
+    if (((*myUnits).unitBuilding[BWAPI::UnitTypes::Zerg_Evolution_Chamber] == 0) && ((*myUnits).upgrades[BWAPI::UpgradeTypes::Grooved_Spines] == 1) &&
         (BWAPI::Broodwar->self()->minerals() >= BWAPI::UnitTypes::Zerg_Evolution_Chamber.mineralPrice() + (*myUnits).blocked_minerals) &&
         MicroGestion::buildBuilding(BWAPI::UnitTypes::Zerg_Evolution_Chamber, desiredPos)) {
     }
@@ -199,10 +204,16 @@ void Actions::Building_tree(std::list<Squad*>& mySquads) {
     }
 }
 
-void Actions::BaseArmy(std::list<Squad*>& mySquads) {
-    Squad* Zerglings;
+void Actions::BaseArmy(std::list<Squad*>& mySquads, int* armyWanted) {
+    Squad* Army;
     int ActionId = 2;
-    Zerglings = getSquad(2, ActionId, mySquads, 80);
+    Army = getSquad(2, ActionId, mySquads);
+    if (Army == nullptr) {
+        Army = new ArmySquad(armyWanted);
+        Army->changeAction(ActionId);
+        enlistUnit(Army, mySquads);
+        mySquads.push_back(Army);
+    }
 }
 
 
@@ -278,29 +289,15 @@ Squad* getSquadUnit(BWAPI::Unit& unit, std::list<Squad*>& mySquads) {
 }
 
 
-// Get a squad which the right parameters or create a new one
-Squad* getSquad(int Squad_type, int ActionId, std::list<Squad*>& mySquads, int size) {
+// Get a squad which the right parameters or return nullptr
+Squad* getSquad(int Squad_type, int ActionId, std::list<Squad*>& mySquads) {
     for (Squad* squad : mySquads) {
         if (squad->get_type() == Squad_type && squad->get_Action() == ActionId) {
             enlistUnit(squad, mySquads);
             return squad;
         }
     }
-
-    static Squad* newSquad;
-    if (Squad_type == 1) {
-        newSquad = new WorkerSquad(size);
-    }
-    else if (Squad_type == 2) {
-        newSquad = new ZerglingSquad(size);
-    }
-    else {
-        newSquad = new Squad(1, 1);
-    }
-    newSquad->changeAction(ActionId);
-    enlistUnit(newSquad, mySquads);
-    mySquads.push_back(newSquad);
-    return newSquad;
+    return nullptr;
 }
 
 
@@ -309,22 +306,14 @@ Squad* getSquad(int Squad_type, int ActionId, std::list<Squad*>& mySquads, int s
 // Add the unused unit to a squad
 void enlistUnit(Squad* squad, std::list<Squad*>& mySquads) {
     squad->countSquadUnits();
-    if (squad->get_droneWanted() > squad->get_droneOwned()) {
-        BWAPI::Unit u;
-        getUnit(BWAPI::UnitTypes::Zerg_Drone, mySquads, u);
-        if (u != nullptr) {
-            if (u->getType() == BWAPI::UnitTypes::Zerg_Drone) {
-                squad->add_Unit(u);
+    for (BWAPI::Unit unit : BWAPI::Broodwar->self()->getUnits()){
+        if ( (!unitInSquad(unit, mySquads)) && (squad->getUnitOwned()[unit->getType()] + squad->getUnitMorphing()[unit->getType()] < squad->getUnitWanted()[unit->getType()])){
+            squad->add_Unit(unit);
+            if (unit->getType() == BWAPI::UnitTypes::Zerg_Lurker_Egg) {
+                squad->getUnitMorphing()[unit->getBuildType()] += 1;
             }
-        }
-    }
-
-    if (squad->get_zerglingWanted() > squad->get_zerglingOwned()) {
-        BWAPI::Unit u;
-        getUnit(BWAPI::UnitTypes::Zerg_Zergling, mySquads, u);
-        if (u != nullptr) {
-            if (u->getType() == BWAPI::UnitTypes::Zerg_Zergling) {
-                squad->add_Unit(u);
+            else {
+                squad->getUnitOwned()[unit->getType()] += 1;
             }
         }
     }

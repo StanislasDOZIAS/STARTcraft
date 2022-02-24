@@ -11,17 +11,12 @@ extern UnitCount* myUnits;
 class Squad{
 public:
 	Squad();
-	Squad(int Squad_type, int size);
+	Squad(int Squad_type);
 	int get_type();
 	int get_Action();
-	int get_droneWanted();
-	int get_zerglingWanted();
-	int get_hydraWanted();
-	int get_lurkerWanted();
-	int get_droneOwned();
-	int get_zerglingOwned();
-	int get_hydraOwned();
-	int get_lurkerOwned();
+	int* Squad::getUnitOwned();
+	int* Squad::getUnitMorphing();
+	int* Squad::getUnitWanted();
 	void add_Unit(BWAPI::Unit& Unit);
 	BWAPI::Unit Squad::remove_UnitType(BWAPI::UnitType& Type);
 	void Squad::remove_Unit(BWAPI::Unit unit);
@@ -33,23 +28,19 @@ public:
 protected :
 	int type;
 	int Action;
-	int droneWanted;
-	int zerglingWanted;
-	int hydraWanted;
-	int lurkerWanted;
-	int droneOwned;
-	int zerglingOwned;
-	int hydraOwned;
-	int lurkerOwned;
+	int unitWanted[int(BWAPI::UnitTypes::Unknown)];
+	int unitOwned[int(BWAPI::UnitTypes::Unknown)];
+	int unitMorphing[int(BWAPI::UnitTypes::Unknown)];
+
 	std::list<BWAPI::Unit> Units;
 };
 
 class WorkerSquad : public Squad {
 public:
-	WorkerSquad(int size);
+	WorkerSquad::WorkerSquad(int size);
 };
 
-class ZerglingSquad : public Squad {
-public :
-	ZerglingSquad(int size);
+class ArmySquad : public Squad {
+public:
+	ArmySquad(int unitWanted[int(BWAPI::UnitTypes::Unknown)]);
 };

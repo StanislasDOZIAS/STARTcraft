@@ -20,7 +20,7 @@ namespace Actions {
 
 	void Building_tree(std::list<Squad*>& mySquads);
 
-	void BaseArmy(std::list<Squad*>& mySquads);
+	void BaseArmy(std::list<Squad*>& mySquads, int* armyWanted);
 }
 
 bool unitInSquad(BWAPI::Unit& unit, std::list<Squad*>& mySquads);
@@ -31,6 +31,6 @@ int transfer_squad(Squad& origin_Squad, Squad& destination_Squad, BWAPI::UnitTyp
 
 Squad* getSquadUnit(BWAPI::Unit& unit, std::list<Squad*>& mySquads);
 
-Squad* getSquad(int Squad_type, int ActionId, std::list<Squad*>& mySquads, int size = 0);
+Squad* getSquad(int Squad_type, int ActionId, std::list<Squad*>& mySquads);
 
 void enlistUnit(Squad* squad, std::list<Squad*>& mySquads);

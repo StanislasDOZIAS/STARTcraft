@@ -4,28 +4,18 @@ Squad::Squad() {
 	Units.resize(0);
 	type = 0;
 	Action = 0;
-	droneWanted = 0;
-	zerglingWanted = 0;
-	hydraWanted = 0;
-	lurkerWanted = 0;
-	droneOwned = 0;
-	zerglingOwned = 0;
-	hydraOwned = 0;
-	lurkerOwned = 0;
+	std::memset(unitOwned, 0, 4 * int(BWAPI::UnitTypes::Unknown));
+	std::memset(unitMorphing, 0, 4 * int(BWAPI::UnitTypes::Unknown));
+	std::memset(unitWanted, 0, 4 * int(BWAPI::UnitTypes::Unknown));
 }
 
-Squad::Squad(int Squad_type, int size) {
+Squad::Squad(int Squad_type){
 	Units.resize(0);
 	type = 0;
 	Action = 0;
-	droneWanted = 0;
-	zerglingWanted = 0;
-	hydraWanted = 0;
-	lurkerWanted = 0;
-	droneOwned = 0;
-	zerglingOwned = 0;
-	hydraOwned = 0;
-	lurkerOwned = 0;
+	std::memset(unitOwned, 0, 4 * int(BWAPI::UnitTypes::Unknown));
+	std::memset(unitMorphing, 0, 4 * int(BWAPI::UnitTypes::Unknown));
+	std::memset(unitWanted, 0, 4 * int(BWAPI::UnitTypes::Unknown));
 }
 
 
@@ -73,67 +63,41 @@ int Squad::get_Action() {
 	return Action;
 }
 
-int Squad::get_droneOwned() {
-	return droneOwned;
+int* Squad::getUnitOwned() {
+	return unitOwned;
 }
 
-int Squad::get_zerglingOwned() {
-	return zerglingOwned;
+int* Squad::getUnitMorphing() {
+	return unitMorphing;
 }
 
-int Squad::get_lurkerOwned() {
-	return lurkerOwned;
+int* Squad::getUnitWanted() {
+	return unitWanted;
 }
 
-int Squad::get_hydraOwned() {
-	return hydraOwned;
-}
-
-int Squad::get_droneWanted() {
-	return droneWanted;
-}
-
-int Squad::get_zerglingWanted() {
-	return zerglingWanted;
-}
-
-int Squad::get_lurkerWanted() {
-	return lurkerWanted;
-}
-
-int Squad::get_hydraWanted() {
-	return hydraWanted;
-}
 
 void Squad::changeAction(int ActionId) {
 	Action = ActionId;
 }
 
 void Squad::countSquadUnits() {
-	droneOwned = 0;
-	zerglingOwned = 0;
-	hydraOwned = 0;
-	lurkerOwned = 0;
+	std::memset(unitOwned, 0, 4 * int(BWAPI::UnitTypes::Unknown));
+	std::memset(unitMorphing, 0, 4 * int(BWAPI::UnitTypes::Unknown));
 	std::list<BWAPI::Unit> to_remove;
 	for (BWAPI::Unit unit : Units) {
 		if (unit->exists()) {
-			if (unit->getType() == BWAPI::UnitTypes::Zerg_Drone) {
-				droneOwned += 1;
+			// We begin with morphing units
+			if ((unit->getType() == BWAPI::UnitTypes::Zerg_Egg) || (unit->getType() == BWAPI::UnitTypes::Zerg_Lurker_Egg)) {
+				unitMorphing[unit->getBuildType()] += 1;
 			}
-			if (unit->getType() == BWAPI::UnitTypes::Zerg_Zergling) {
-				zerglingOwned += 1;
-			}
-			if (unit->getType() == BWAPI::UnitTypes::Zerg_Hydralisk) {
-				hydraOwned += 1;
-			}
-			if (unit->getType() == BWAPI::UnitTypes::Zerg_Lurker) {
-				lurkerOwned += 1;
+			else {
+				unitOwned[unit->getType()] += 1;
 			}
 		}
 		else {
 			to_remove.push_back(unit);
 		}
-		}
+	}
 	for(BWAPI::Unit unit : to_remove) {
 		Units.remove(unit);
 	}
@@ -142,12 +106,14 @@ void Squad::countSquadUnits() {
 WorkerSquad::WorkerSquad(int size){
 	Units.resize(0);
 	type = 1;
-	droneWanted = size;
+	unitWanted[BWAPI::UnitTypes::Zerg_Drone] = size;
 }
 
 
-ZerglingSquad::ZerglingSquad(int size) {
+ArmySquad::ArmySquad(int* armyWanted) {
 	Units.resize(0);
 	type = 2;
-	zerglingWanted = size;
+	for (int unittype = 0; unittype < BWAPI::UnitTypes::Unknown; ++unittype) {
+		unitWanted[unittype] = armyWanted[unittype];
+	}
 }

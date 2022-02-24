@@ -63,7 +63,14 @@ void StarterBot::onFrame()
     Actions::Economy(mySquads);
 
     // Manage the army
-    Actions::BaseArmy(mySquads);
+    int armyWanted[int(BWAPI::UnitTypes::Unknown)];
+    for (int unittype = 0; unittype < BWAPI::UnitTypes::Unknown; ++unittype) {
+        if (unittype != BWAPI::UnitTypes::Zerg_Drone) {
+            armyWanted[unittype] = (*myUnits).unitWanted[unittype];
+        }
+    }
+
+    Actions::BaseArmy(mySquads, armyWanted);
 
     // To morph from combat unit
     morphFromCombatUnit();

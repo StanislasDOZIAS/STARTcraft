@@ -134,8 +134,6 @@ void nextLarvaMorph(BWAPI::GameWrapper& Broodwar) {
     }
 }
 
-
-
 UnitCount::UnitCount(){
 
     building_frame_count = 0;
@@ -150,13 +148,13 @@ UnitCount::UnitCount(){
 
     std::memset(unitBuilding, 0, 4*int(BWAPI::UnitTypes::Unknown));
     std::memset(unitOwned, 0, 4*int(BWAPI::UnitTypes::Unknown));
-    std::memset(unitMorphing, 0, 4*int(BWAPI::UnitTypes::Unknown)+3);
+    std::memset(unitMorphing, 0, 4*int(BWAPI::UnitTypes::Unknown));
     std::memset(tech, 0, 4*int(BWAPI::TechTypes::Unknown));
     std::memset(upgrades, 0, 4*int(BWAPI::UpgradeTypes::Unknown));
 
     std::memset(unitWanted, 0, 4*int(BWAPI::UnitTypes::Unknown));
     unitWanted[BWAPI::UnitTypes::Zerg_Drone] = 20;
-    unitWanted[BWAPI::UnitTypes::Zerg_Zergling] = 50;
-    unitWanted[BWAPI::UnitTypes::Zerg_Hydralisk] = 20;
-    unitWanted[BWAPI::UnitTypes::Zerg_Lurker] = 10;
+    unitWanted[BWAPI::UnitTypes::Zerg_Zergling] = 0;
+    unitWanted[BWAPI::UnitTypes::Zerg_Hydralisk] = 50;
+    unitWanted[BWAPI::UnitTypes::Zerg_Lurker] = 5;
 }
