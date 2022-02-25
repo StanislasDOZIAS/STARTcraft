@@ -75,38 +75,18 @@ void StarterBot::onFrame()
     }
     Actions::BaseArmy(mySquads, armyWanted);
 
-    // To morph from combat unit
-    morphFromCombatUnit();
 
     attackStartLocations();
 
     (*myUnits).building_frame_count += 1;
 
-    std::cout << "Squad List : ";
-    for (Squad* squad : mySquads) {
-        std::cout << squad->get_type()<< " " << squad->get_Action() << " " << squad->get_Units().size() <<"    ";
-    }
-    std::cout << std::endl;
+    //std::cout << "Squad List : ";
+    //for (Squad* squad : mySquads) {
+    //    std::cout << squad->get_type()<< " " << squad->get_Action() << " " << squad->get_Units().size() <<"    ";
+    //}
+    //std::cout << std::endl;
 
 }
-
-
-// Train more combat units so we can fight people
-
-void StarterBot::morphFromCombatUnit()
-{
-    // Morph lurkers
-    if (((*myUnits).tech[BWAPI::TechTypes::Lurker_Aspect] == 1) && ((*myUnits).unitOwned[BWAPI::UnitTypes::Zerg_Lurker] + (*myUnits).unitMorphing[BWAPI::UnitTypes::Zerg_Lurker] < (*myUnits).unitWanted[BWAPI::UnitTypes::Zerg_Lurker]) &&
-        (BWAPI::Broodwar->self()->minerals() >= BWAPI::UnitTypes::Zerg_Lurker.mineralPrice() + (*myUnits).blocked_minerals) && (BWAPI::Broodwar->self()->gas() >= BWAPI::UnitTypes::Zerg_Lurker.gasPrice() + (*myUnits).blocked_gas)) {
-        if ((*myUnits).hydra != nullptr) {
-            std::cout << (getSquadUnit((*myUnits).hydra, mySquads)==nullptr)<<std::endl;
-            if ((*myUnits).hydra->morph(BWAPI::UnitTypes::Zerg_Lurker)) {
-                std::cout << "WARNING" << (*myUnits).hydra->getType() << " " << getSquadUnit((*myUnits).hydra, mySquads)->get_type() << std::endl;
-            }
-        }
-    }
-}
-
 
 
 void StarterBot::attackStartLocations() {
@@ -191,10 +171,10 @@ void StarterBot::onUnitComplete(BWAPI::Unit unit)
 
 
     // Units
-    if ((unit->getPlayer() == BWAPI::Broodwar->self()) && (!unit->getType().isBuilding()) && (unit->getType()!=BWAPI::UnitTypes::Zerg_Larva)){
+    Squad* squad = getSquadUnit(unit, mySquads);
+    if ((squad == nullptr) && (unit->getPlayer() == BWAPI::Broodwar->self()) && (!unit->getType().isBuilding()) && (unit->getType() != BWAPI::UnitTypes::Zerg_Larva)) {
         mySquads.front()->add_Unit(unit);
     }
-
 }
 
 // Called whenever a unit appears, with a pointer to the destroyed unit

@@ -18,8 +18,6 @@ public:
 
     StarterBot();
 
-	bool builAdditionalUnits();
-	void morphFromCombatUnit();
 	void attackStartLocations();
 	void drawDebugInformation();
 

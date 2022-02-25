@@ -69,7 +69,7 @@ void Squad::countSquadUnits() {
 	std::memset(unitMorphing, 0, 4 * int(BWAPI::UnitTypes::Unknown));
 	std::list<BWAPI::Unit> to_remove;
 	for (BWAPI::Unit unit : Units) {
-		if (unit->exists()) {
+		if (unit->exists() && !(unit->getType().isBuilding())) {
 			// We begin with morphing units
 			if ((unit->getType() == BWAPI::UnitTypes::Zerg_Egg) || (unit->getType() == BWAPI::UnitTypes::Zerg_Lurker_Egg)) {
 				unitMorphing[unit->getBuildType()] += 1;
@@ -83,7 +83,7 @@ void Squad::countSquadUnits() {
 		}
 	}
 	for(BWAPI::Unit unit : to_remove) {
-		remove(Units.begin(), Units.end(), unit);
+		remove_Unit(unit);
 	}
 }
 

@@ -214,6 +214,18 @@ void Actions::BaseArmy(std::list<Squad*>& mySquads, int* armyWanted) {
         enlistUnit(Army, mySquads);
         mySquads.push_back(Army);
     }
+
+    if (((*myUnits).tech[BWAPI::TechTypes::Lurker_Aspect] == 1) && ((*Army).unitOwned[BWAPI::UnitTypes::Zerg_Hydralisk]>=1) &&
+        ((*Army).unitOwned[BWAPI::UnitTypes::Zerg_Lurker] + (*Army).unitMorphing[BWAPI::UnitTypes::Zerg_Lurker] < (*Army).unitWanted[BWAPI::UnitTypes::Zerg_Lurker]) &&
+        (BWAPI::Broodwar->self()->minerals() >= BWAPI::UnitTypes::Zerg_Lurker.mineralPrice() + (*myUnits).blocked_minerals) && (BWAPI::Broodwar->self()->gas() >= BWAPI::UnitTypes::Zerg_Lurker.gasPrice() + (*myUnits).blocked_gas)) {
+        for (BWAPI::Unit unit : Army->get_Units()) {
+            if (unit->getType() == BWAPI::UnitTypes::Zerg_Hydralisk) {
+                if ((*myUnits).hydra->morph(BWAPI::UnitTypes::Zerg_Lurker)){
+                    break;
+                }
+            }
+        }
+    }
 }
 
 
@@ -234,29 +246,6 @@ bool unitInSquad(BWAPI::Unit unit, std::list<Squad*>& mySquads) {
     return inSquad;
 }
 
-//Return a free unit (in no squad)
-void getUnit(BWAPI::UnitType type, std::list<Squad*>& mySquads, BWAPI::Unit& unity) {
-    bool found_unit = false;
-    for (BWAPI::Unit u : BWAPI::Broodwar->self()->getUnits()) {
-        if (u->getType() == type && !unitInSquad(u, mySquads)) {
-            unity = u;
-            found_unit = true;
-            //return u;
-        }
-    }
-    if (!found_unit) {
-        for (BWAPI::Unit u : BWAPI::Broodwar->self()->getUnits()) {
-            if (u->getType() == BWAPI::UnitTypes::Zerg_Larva && !unitInSquad(u, mySquads)) {
-                unity = u;
-                found_unit = true;
-            }
-        }
-    }
-    if (!found_unit) {
-        unity = nullptr;
-    }
-    //return (*myUnits).larva;
-}
 
 // transfer a unit from a squad to another
 int transfer_squadType(Squad* origin_Squad, Squad* destination_Squad, BWAPI::UnitType Type, int number) {
@@ -292,8 +281,7 @@ Squad* getSquadUnit(BWAPI::Unit unit, std::list<Squad*>& mySquads) {
     return nullptr;
 }
 
-
-// Get a squad which the right parameters or return nullptr
+// Get a squad which the right parameters or return nullptr, if it finds a squad, fill it from the blank squad
 Squad* getSquad(int Squad_type, int ActionId, std::list<Squad*>& mySquads) {
     for (Squad* squad : mySquads) {
         if (squad->get_type() == Squad_type && squad->get_Action() == ActionId) {
@@ -303,8 +291,6 @@ Squad* getSquad(int Squad_type, int ActionId, std::list<Squad*>& mySquads) {
     }
     return nullptr;
 }
-
-
 
 
 // Add the unused unit to a squad

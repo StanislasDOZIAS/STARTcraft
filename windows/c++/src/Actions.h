@@ -25,7 +25,6 @@ namespace Actions {
 
 bool unitInSquad(BWAPI::Unit unit, std::list<Squad*>& mySquads);
 
-void getUnit(BWAPI::UnitType type, std::list<Squad*>& mySquads, BWAPI::Unit& unity);
 
 int transfer_squadType(Squad* origin_Squad, Squad* destination_Squad, BWAPI::UnitType Type, int number);
 
