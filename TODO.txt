@@ -1,4 +1,7 @@
-lurker
+take a B2 (need to modify Economy and the WorkerSquad to attacik them to a base + deal with the case of a mined base ?)
 
-clean code
+Harass Squad
 
+Scout
+
+Adatpt TechTree
