@@ -40,5 +40,6 @@ public:
 
 class ArmySquad : public Squad {
 public:
+	bool alreadyAttacking;
 	ArmySquad(int unitWanted[int(BWAPI::UnitTypes::Unknown)]);
 };

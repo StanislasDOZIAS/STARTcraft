@@ -75,9 +75,6 @@ void StarterBot::onFrame()
     }
     Actions::BaseArmy(mySquads, armyWanted);
 
-
-    attackStartLocations();
-
     (*myUnits).building_frame_count += 1;
 
     //std::cout << "Squad List : ";
@@ -87,22 +84,6 @@ void StarterBot::onFrame()
     //std::cout << std::endl;
 
 }
-
-
-void StarterBot::attackStartLocations() {
-    if (((*myUnits).unitOwned[BWAPI::UnitTypes::Zerg_Zergling] >= (*myUnits).unitWanted[BWAPI::UnitTypes::Zerg_Zergling]) && ((*myUnits).unitOwned[BWAPI::UnitTypes::Zerg_Hydralisk] >= (*myUnits).unitWanted[BWAPI::UnitTypes::Zerg_Hydralisk])) {
-        for (BWAPI::Unit unit : BWAPI::Broodwar->self()->getUnits()) {
-            if ((unit->getType() == BWAPI::UnitTypes::Zerg_Zergling) || (unit->getType() == BWAPI::UnitTypes::Zerg_Hydralisk)) {
-                for (BWAPI::TilePosition ennemyLocation : BWAPI::Broodwar->getStartLocations()) {
-                    if (ennemyLocation != BWAPI::Broodwar->self()->getStartLocation()) {
-                        unit->attack(static_cast <BWAPI::Position>(ennemyLocation), true);
-                    }
-                }
-            }
-        }
-    }
-}
-
 
 // Draw some relevent information to the screen to help us debug the bot
 void StarterBot::drawDebugInformation()

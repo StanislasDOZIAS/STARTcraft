@@ -35,3 +35,7 @@ Squad* getSquadUnit(BWAPI::Unit unit, std::list<Squad*>& mySquads);
 Squad* getSquad(int Squad_type, int ActionId, std::list<Squad*>& mySquads);
 
 void enlistUnit(Squad* squad, std::list<Squad*>& mySquads);
+
+bool attackEnnemie(Squad* squad, bool alreadyAttacking);
+
+void morphLurker(Squad* squad);

@@ -97,6 +97,7 @@ WorkerSquad::WorkerSquad(int size){
 ArmySquad::ArmySquad(int* armyWanted) {
 	type = 2;
 	Action = 0;
+	alreadyAttacking = false;
 	for (int unittype = 0; unittype < BWAPI::UnitTypes::Unknown; ++unittype) {
 		unitWanted[unittype] = armyWanted[unittype];
 	}

@@ -17,8 +17,6 @@ class StarterBot{
 public:
 
     StarterBot();
-
-	void attackStartLocations();
 	void drawDebugInformation();
 
     // functions that are triggered by various BWAPI events from main.cpp

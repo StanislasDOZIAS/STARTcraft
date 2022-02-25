@@ -205,9 +205,8 @@ void Actions::Building_tree(std::list<Squad*>& mySquads) {
 }
 
 void Actions::BaseArmy(std::list<Squad*>& mySquads, int* armyWanted) {
-    Squad* Army;
     int ActionId = 2;
-    Army = getSquad(2, ActionId, mySquads);
+    ArmySquad* Army = static_cast<ArmySquad*>(getSquad(2, ActionId, mySquads));
     if (Army == nullptr) {
         Army = new ArmySquad(armyWanted);
         Army->changeAction(ActionId);
@@ -215,17 +214,15 @@ void Actions::BaseArmy(std::list<Squad*>& mySquads, int* armyWanted) {
         mySquads.push_back(Army);
     }
 
-    if (((*myUnits).tech[BWAPI::TechTypes::Lurker_Aspect] == 1) && ((*Army).unitOwned[BWAPI::UnitTypes::Zerg_Hydralisk]>=1) &&
-        ((*Army).unitOwned[BWAPI::UnitTypes::Zerg_Lurker] + (*Army).unitMorphing[BWAPI::UnitTypes::Zerg_Lurker] < (*Army).unitWanted[BWAPI::UnitTypes::Zerg_Lurker]) &&
-        (BWAPI::Broodwar->self()->minerals() >= BWAPI::UnitTypes::Zerg_Lurker.mineralPrice() + (*myUnits).blocked_minerals) && (BWAPI::Broodwar->self()->gas() >= BWAPI::UnitTypes::Zerg_Lurker.gasPrice() + (*myUnits).blocked_gas)) {
-        for (BWAPI::Unit unit : Army->get_Units()) {
-            if (unit->getType() == BWAPI::UnitTypes::Zerg_Hydralisk) {
-                if ((*myUnits).hydra->morph(BWAPI::UnitTypes::Zerg_Lurker)){
-                    break;
-                }
-            }
-        }
+    //morphing lurker
+    morphLurker(Army);
+
+    //Attack the ennemie
+
+    if (attackEnnemie(Army, Army->alreadyAttacking)) {
+        Army->alreadyAttacking = true;
     }
+
 }
 
 
@@ -304,6 +301,37 @@ void enlistUnit(Squad* squad, std::list<Squad*>& mySquads) {
             }
             else {
                 squad->unitOwned[unit->getType()] += 1;
+            }
+        }
+    }
+}
+
+bool attackEnnemie(Squad* squad, bool alreadyAttacking) {
+    bool wantAttack = (((*squad).unitOwned[BWAPI::UnitTypes::Zerg_Zergling] >= (*squad).unitWanted[BWAPI::UnitTypes::Zerg_Zergling]) && ((*squad).unitOwned[BWAPI::UnitTypes::Zerg_Hydralisk] >= (*squad).unitWanted[BWAPI::UnitTypes::Zerg_Hydralisk]));
+    if (wantAttack||alreadyAttacking){    
+    for (BWAPI::Unit unit : squad->get_Units()) {
+            if (((unit->getType() == BWAPI::UnitTypes::Zerg_Zergling) || (unit->getType() == BWAPI::UnitTypes::Zerg_Hydralisk)) && unit->isIdle()) {
+                for (BWAPI::TilePosition ennemyLocation : BWAPI::Broodwar->getStartLocations()) {
+                    if (ennemyLocation != BWAPI::Broodwar->self()->getStartLocation()) {
+                        unit->attack(static_cast <BWAPI::Position>(ennemyLocation), false);
+                    }
+                }
+            }
+        }
+        return true;
+    }
+    return false;
+}
+
+void morphLurker(Squad* squad) {
+    if (((*myUnits).tech[BWAPI::TechTypes::Lurker_Aspect] == 1) && ((*squad).unitOwned[BWAPI::UnitTypes::Zerg_Hydralisk] >= 1) &&
+        ((*squad).unitOwned[BWAPI::UnitTypes::Zerg_Lurker] + (*squad).unitMorphing[BWAPI::UnitTypes::Zerg_Lurker] < (*squad).unitWanted[BWAPI::UnitTypes::Zerg_Lurker]) &&
+        (BWAPI::Broodwar->self()->minerals() >= BWAPI::UnitTypes::Zerg_Lurker.mineralPrice() + (*myUnits).blocked_minerals) && (BWAPI::Broodwar->self()->gas() >= BWAPI::UnitTypes::Zerg_Lurker.gasPrice() + (*myUnits).blocked_gas)) {
+        for (BWAPI::Unit unit : squad->get_Units()) {
+            if (unit->getType() == BWAPI::UnitTypes::Zerg_Hydralisk) {
+                if ((*myUnits).hydra->morph(BWAPI::UnitTypes::Zerg_Lurker)) {
+                    break;
+                }
             }
         }
     }
