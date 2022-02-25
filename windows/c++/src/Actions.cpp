@@ -53,11 +53,11 @@ void Actions::Economy(std::list<Squad*>& mySquads) {
     }
 
     mineral->countSquadUnits();
-    for (BWAPI::Unit u : mineral->get_Units()) {
-        BWAPI::Unit closestMineral = Tools::GetClosestUnitTo(u, BWAPI::Broodwar->getMinerals());
+    for (BWAPI::Unit unit : mineral->get_Units()) {
+        BWAPI::Unit closestMineral = Tools::GetClosestUnitTo(unit, BWAPI::Broodwar->getMinerals());
 
         // If a valid mineral was found, right click it with the unit in order to start harvesting
-        if (closestMineral && u->isIdle()) { u->rightClick(closestMineral); }
+        if (closestMineral && unit->isIdle()) { unit->rightClick(closestMineral); }
     }
 
     if ((*myUnits).unitBuilding[BWAPI::UnitTypes::Zerg_Extractor] == 3) {
@@ -71,10 +71,10 @@ void Actions::Economy(std::list<Squad*>& mySquads) {
         }
         gas->countSquadUnits();
         if (gas->get_Units().size() < 4) {
-            transfer_squad(*mineral, *gas, BWAPI::UnitTypes::Zerg_Drone, 4 - gas->get_Units().size());
+            transfer_squadType(mineral, gas, BWAPI::UnitTypes::Zerg_Drone, 4 - gas->get_Units().size());
         }
-        for (BWAPI::Unit u : gas->get_Units()) {
-            if (u->isIdle() || u->isGatheringMinerals()) { u->rightClick(Extractor); }
+        for (BWAPI::Unit unit : gas->get_Units()) {
+            if (unit->isIdle() || unit->isGatheringMinerals()) { unit->rightClick(Extractor); }
         }
     }
 }
@@ -222,7 +222,7 @@ void Actions::BaseArmy(std::list<Squad*>& mySquads, int* armyWanted) {
 //Usefull functions
 
 // Say if a unit is in a squad
-bool unitInSquad(BWAPI::Unit& unit, std::list<Squad*>& mySquads) {
+bool unitInSquad(BWAPI::Unit unit, std::list<Squad*>& mySquads) {
     bool inSquad = false;
     for (Squad* squad : mySquads) {
         for (BWAPI::Unit u2 : squad->get_Units()) {
@@ -259,12 +259,12 @@ void getUnit(BWAPI::UnitType type, std::list<Squad*>& mySquads, BWAPI::Unit& uni
 }
 
 // transfer a unit from a squad to another
-int transfer_squad(Squad& origin_Squad, Squad& destination_Squad, BWAPI::UnitType Type, int number) {
+int transfer_squadType(Squad* origin_Squad, Squad* destination_Squad, BWAPI::UnitType Type, int number) {
     int res = 0;
     while (res < number) {
-        BWAPI::Unit transfered_unit = origin_Squad.remove_UnitType(Type);
+        BWAPI::Unit transfered_unit = origin_Squad->remove_UnitType(Type);
         if (transfered_unit != nullptr) {
-            destination_Squad.add_Unit(transfered_unit);
+            destination_Squad->add_Unit(transfered_unit);
             res += 1;
         }
         else {
@@ -274,10 +274,14 @@ int transfer_squad(Squad& origin_Squad, Squad& destination_Squad, BWAPI::UnitTyp
     return res;
 }
 
+void transfer_squad(Squad* origin_Squad, Squad* destination_Squad, BWAPI::Unit unit) {
+    origin_Squad->remove_Unit(unit);
+    destination_Squad->add_Unit(unit);
+}
 
 
 // Return the squad of a unit
-Squad* getSquadUnit(BWAPI::Unit& unit, std::list<Squad*>& mySquads) {
+Squad* getSquadUnit(BWAPI::Unit unit, std::list<Squad*>& mySquads) {
     for (Squad* squad : mySquads) {
         for (BWAPI::Unit u2 : squad->get_Units()) {
             if (u2->getID() == unit->getID()) {
@@ -306,14 +310,14 @@ Squad* getSquad(int Squad_type, int ActionId, std::list<Squad*>& mySquads) {
 // Add the unused unit to a squad
 void enlistUnit(Squad* squad, std::list<Squad*>& mySquads) {
     squad->countSquadUnits();
-    for (BWAPI::Unit unit : BWAPI::Broodwar->self()->getUnits()){
-        if ( (!unitInSquad(unit, mySquads)) && (squad->getUnitOwned()[unit->getType()] + squad->getUnitMorphing()[unit->getType()] < squad->getUnitWanted()[unit->getType()])){
-            squad->add_Unit(unit);
+    for (BWAPI::Unit unit : mySquads.front()->get_Units()){
+        if ((squad->unitOwned[unit->getType()] + squad->unitMorphing[unit->getType()] < squad->unitWanted[unit->getType()])){
+            transfer_squad(mySquads.front(), squad, unit);
             if (unit->getType() == BWAPI::UnitTypes::Zerg_Lurker_Egg) {
-                squad->getUnitMorphing()[unit->getBuildType()] += 1;
+                squad->unitMorphing[unit->getBuildType()] += 1;
             }
             else {
-                squad->getUnitOwned()[unit->getType()] += 1;
+                squad->unitOwned[unit->getType()] += 1;
             }
         }
     }

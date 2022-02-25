@@ -1,4 +1,4 @@
-créer la squad "vide"
+lurker
 
 clean code
 

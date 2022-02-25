@@ -36,7 +36,6 @@ public:
 	void onUnitHide(BWAPI::Unit unit);
 	void onUnitRenegade(BWAPI::Unit unit);
 
-
 	Squad& getSquad(int Squad_type, int ActionId, int size = 0);
 	BWAPI::Unit& getUnit(BWAPI::UnitType type);
 	void enlistUnit(Squad& squad);

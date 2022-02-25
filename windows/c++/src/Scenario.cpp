@@ -82,18 +82,6 @@ void countUnits(BWAPI::GameWrapper& Broodwar)
                 (*myUnits).hydra = unit;
             }
 
-            if (unit->getType() == BWAPI::UnitTypes::Zerg_Drone) {
-                // If it is an idle worker, then we want to send it somewhere
-                if (unit->isIdle())
-                {
-                    // Get the closest mineral to this worker unit
-                    BWAPI::Unit closestMineral = Tools::GetClosestUnitTo(unit, BWAPI::Broodwar->getMinerals());
-
-                    // If a valid mineral was found, right click it with the unit in order to start harvesting
-                    if (closestMineral) { unit->rightClick(closestMineral); }
-                }
-            }
-
             if (unit->getType() == BWAPI::UnitTypes::Zerg_Overlord) {
                 (*myUnits).supplyAvailable += 16;
             }

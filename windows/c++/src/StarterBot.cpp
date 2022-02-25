@@ -21,6 +21,8 @@ void StarterBot::onStart()
 
     // Call MapTools OnStart
     m_mapTools.onStart();
+
+    mySquads.push_back(new Squad());
 }
 
 // Called whenever the game ends and tells you if you won or not
@@ -29,6 +31,8 @@ void StarterBot::onEnd(bool isWinner)
     std::cout << "We " << (isWinner ? "won!" : "lost!") << "\n";
 
     delete myUnits;
+
+    mySquads.clear();
 }
 
 // Called on each frame of the game
@@ -69,7 +73,6 @@ void StarterBot::onFrame()
             armyWanted[unittype] = (*myUnits).unitWanted[unittype];
         }
     }
-
     Actions::BaseArmy(mySquads, armyWanted);
 
     // To morph from combat unit
@@ -78,32 +81,17 @@ void StarterBot::onFrame()
     attackStartLocations();
 
     (*myUnits).building_frame_count += 1;
+
+    std::cout << "Squad List : ";
+    for (Squad* squad : mySquads) {
+        std::cout << squad->get_type()<< " " << squad->get_Action() << " " << squad->get_Units().size() <<"    ";
+    }
+    std::cout << std::endl;
+
 }
 
 
 // Train more combat units so we can fight people
-bool StarterBot::builAdditionalUnits()
-{
-    // Build hydras
-    if (((*myUnits).unitBuilding[BWAPI::UnitTypes::Zerg_Hydralisk_Den] == 3) && ((*myUnits).unitOwned[BWAPI::UnitTypes::Zerg_Hydralisk] + (*myUnits).unitMorphing[BWAPI::UnitTypes::Zerg_Hydralisk] < (*myUnits).unitWanted[BWAPI::UnitTypes::Zerg_Hydralisk]) &&
-        (BWAPI::Broodwar->self()->minerals() >= BWAPI::UnitTypes::Zerg_Hydralisk.mineralPrice() + (*myUnits).blocked_minerals) && (BWAPI::Broodwar->self()->gas() >= BWAPI::UnitTypes::Zerg_Hydralisk.gasPrice() + (*myUnits).blocked_gas))
-    {
-        if ((*myUnits).larva->train(BWAPI::UnitTypes::Zerg_Hydralisk)) {
-            return true;
-        }
-    }
-
-    // Build zergling
-    if (((*myUnits).unitBuilding[BWAPI::UnitTypes::Zerg_Spawning_Pool] == 3) && ((*myUnits).unitOwned[BWAPI::UnitTypes::Zerg_Zergling] + (*myUnits).unitMorphing[BWAPI::UnitTypes::Zerg_Zergling] < (*myUnits).unitWanted[BWAPI::UnitTypes::Zerg_Zergling]) &&
-        (BWAPI::Broodwar->self()->minerals() >= BWAPI::UnitTypes::Zerg_Zergling.mineralPrice() + (*myUnits).blocked_minerals))
-    {
-        if ((*myUnits).larva->train(BWAPI::UnitTypes::Zerg_Zergling)) {
-            return true;
-        }
-    }
-
-    return false;
-}
 
 void StarterBot::morphFromCombatUnit()
 {
@@ -111,7 +99,10 @@ void StarterBot::morphFromCombatUnit()
     if (((*myUnits).tech[BWAPI::TechTypes::Lurker_Aspect] == 1) && ((*myUnits).unitOwned[BWAPI::UnitTypes::Zerg_Lurker] + (*myUnits).unitMorphing[BWAPI::UnitTypes::Zerg_Lurker] < (*myUnits).unitWanted[BWAPI::UnitTypes::Zerg_Lurker]) &&
         (BWAPI::Broodwar->self()->minerals() >= BWAPI::UnitTypes::Zerg_Lurker.mineralPrice() + (*myUnits).blocked_minerals) && (BWAPI::Broodwar->self()->gas() >= BWAPI::UnitTypes::Zerg_Lurker.gasPrice() + (*myUnits).blocked_gas)) {
         if ((*myUnits).hydra != nullptr) {
-            (*myUnits).hydra->morph(BWAPI::UnitTypes::Zerg_Lurker);
+            std::cout << (getSquadUnit((*myUnits).hydra, mySquads)==nullptr)<<std::endl;
+            if ((*myUnits).hydra->morph(BWAPI::UnitTypes::Zerg_Lurker)) {
+                std::cout << "WARNING" << (*myUnits).hydra->getType() << " " << getSquadUnit((*myUnits).hydra, mySquads)->get_type() << std::endl;
+            }
         }
     }
 }
@@ -185,7 +176,6 @@ void StarterBot::onSendText(std::string text)
 // Units are created in buildings like barracks before they are visible, 
 // so this will trigger when you issue the build command for most units
 void StarterBot::onUnitCreate(BWAPI::Unit unit)
-
 {
 }
 
@@ -201,6 +191,10 @@ void StarterBot::onUnitComplete(BWAPI::Unit unit)
 
 
     // Units
+    if ((unit->getPlayer() == BWAPI::Broodwar->self()) && (!unit->getType().isBuilding()) && (unit->getType()!=BWAPI::UnitTypes::Zerg_Larva)){
+        mySquads.front()->add_Unit(unit);
+    }
+
 }
 
 // Called whenever a unit appears, with a pointer to the destroyed unit
