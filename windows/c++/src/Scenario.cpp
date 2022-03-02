@@ -151,7 +151,7 @@ UnitCount::UnitCount(){
 
     std::memset(unitWanted, 0, 4*int(BWAPI::UnitTypes::Unknown));
     unitWanted[BWAPI::UnitTypes::Zerg_Drone] = 20;
-    unitWanted[BWAPI::UnitTypes::Zerg_Zergling] = 0;
+    unitWanted[BWAPI::UnitTypes::Zerg_Zergling] = 30;
     unitWanted[BWAPI::UnitTypes::Zerg_Hydralisk] = 50;
     unitWanted[BWAPI::UnitTypes::Zerg_Lurker] = 5;
 }

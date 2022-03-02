@@ -337,13 +337,9 @@ void enlistUnit(Squad* squad, std::list<Squad*>& mySquads) {
 bool attackEnnemie(Squad* squad, bool alreadyAttacking) {
     bool wantAttack = (((*squad).unitOwned[BWAPI::UnitTypes::Zerg_Zergling] >= (*squad).unitWanted[BWAPI::UnitTypes::Zerg_Zergling]) && ((*squad).unitOwned[BWAPI::UnitTypes::Zerg_Hydralisk] >= (*squad).unitWanted[BWAPI::UnitTypes::Zerg_Hydralisk]));
     if (wantAttack||alreadyAttacking){    
-    for (BWAPI::Unit unit : squad->get_Units()) {
-            if (((unit->getType() == BWAPI::UnitTypes::Zerg_Zergling) || (unit->getType() == BWAPI::UnitTypes::Zerg_Hydralisk)) && unit->isIdle()) {
-                for (BWAPI::TilePosition ennemyLocation : BWAPI::Broodwar->getStartLocations()) {
-                    if (ennemyLocation != BWAPI::Broodwar->self()->getStartLocation()) {
-                        unit->attack(static_cast <BWAPI::Position>(ennemyLocation), false);
-                    }
-                }
+        for (BWAPI::TilePosition ennemyLocation : BWAPI::Broodwar->getStartLocations()) {
+            if (ennemyLocation != BWAPI::Broodwar->self()->getStartLocation()) {
+                squad->attack(static_cast <BWAPI::Position>(ennemyLocation));
             }
         }
         return true;

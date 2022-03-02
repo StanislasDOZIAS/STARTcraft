@@ -20,6 +20,7 @@ public:
 	BWAPI::Unit Squad::remove_UnitType(BWAPI::UnitType Type);
 	void Squad::remove_Unit(BWAPI::Unit unit);
 	void move(BWAPI::Position postion);
+	void attack(BWAPI::Position target);
 	void changeAction(int ActionId);
 	std::vector<BWAPI::Unit>& get_Units();
 	void countSquadUnits();

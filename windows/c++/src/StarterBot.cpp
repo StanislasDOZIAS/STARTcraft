@@ -132,12 +132,12 @@ void StarterBot::onFrame()
     Actions::baseArmy(mySquads, armyWanted);
 
     (*myUnits).building_frame_count += 1;
-
+    /*
     std::cout << "Squad List : ";
     for (Squad* squad : mySquads) {
         std::cout << squad->get_type()<< " " << squad->get_Action() << " " << squad->get_Units().size() <<"    ";
     }
-    std::cout << std::endl;
+    std::cout << std::endl;*/
 
 }
 

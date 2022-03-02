@@ -46,6 +46,45 @@ void Squad::move(BWAPI::Position position){
 	}
 }
 
+void Squad::attack(BWAPI::Position target) {
+	double slower = 10000;
+	BWAPI::UnitType slowUnit;
+	double temp = 0;
+	for (BWAPI::Unit unit : Units) {
+		temp = std::max(unit->getType().topSpeed(), std::sqrt(unit->getVelocityX()* unit->getVelocityX() + unit->getVelocityY()* unit->getVelocityY()));
+		if (temp < slower) {
+			slower = temp;
+			slowUnit = unit->getType();
+		}
+	}
+	for (BWAPI::Unit unit : Units) {
+		if (unit->getType() != slowUnit && !MicroGestion::EnnemiesClose(unit)) {
+			unit->stop()
+		}
+		else {
+			unit->attack(target, false);
+		}
+	}
+	BWAPI::Position center = BWAPI::Position(0, 0);
+	for (BWAPI::Unit unit : Units) {
+		center += unit->getPosition();
+	}
+	if (Units.size() > 0) {
+		center.x /= Units.size();
+		center.y /= Units.size();
+	}
+	for (BWAPI::Unit unit : Units) {
+		unit->attack(target, false);
+		if (unit->getPosition().getDistance(center) > 100) {
+			unit->attack(target, false);
+		}
+	}
+	/*
+	for (BWAPI::Unit unit : Units) {
+		unit->attack(target, false);
+	}*/
+}
+
 std::vector<BWAPI::Unit>& Squad::get_Units(){
 	return Units;
 }

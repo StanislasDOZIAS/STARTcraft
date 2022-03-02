@@ -42,3 +42,13 @@ BWAPI::Unit MicroGestion::getBuilder(std::list<Squad*>& mySquads) {
     }
     return builder;
 }
+
+bool MicroGestion::EnnemiesClose(BWAPI::Unit unit) {
+    bool ret = false;
+    for (BWAPI::Unit u : unit->getUnitsInRadius(200)) {
+        if (u->getPlayer() == BWAPI::Broodwar->enemy()) {
+            ret = true;
+        }
+    }
+    return ret;
+}

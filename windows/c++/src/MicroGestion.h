@@ -9,4 +9,5 @@ extern UnitCount* myUnits;
 namespace MicroGestion {
     bool buildBuilding(BWAPI::UnitType building, BWAPI::TilePosition desiredPos, std::list<Squad*>& mySquads, BWAPI::Unit builder = nullptr);
     BWAPI::Unit getBuilder(std::list<Squad*>& mySquads);
+    bool EnnemiesClose(BWAPI::Unit unit);
 }
