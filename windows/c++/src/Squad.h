@@ -17,7 +17,7 @@ public:
 	int get_Action();
 
 	void add_Unit(BWAPI::Unit Unit);
-	BWAPI::Unit Squad::remove_UnitType(BWAPI::UnitType& Type);
+	BWAPI::Unit Squad::remove_UnitType(BWAPI::UnitType Type);
 	void Squad::remove_Unit(BWAPI::Unit unit);
 	void move(BWAPI::Position postion);
 	void changeAction(int ActionId);

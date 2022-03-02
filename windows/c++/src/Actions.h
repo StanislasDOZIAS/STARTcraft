@@ -4,6 +4,7 @@
 #include "Scenario.h"
 #include "StarterBot.h"
 #include "MicroGestion.h"
+#include "BWEM/mapImpl.h"
 
 struct UnitCount;
 
@@ -18,13 +19,14 @@ namespace Actions {
 
 	void Economy(std::list<Squad*>& mySquads);
 
-	void Building_tree(std::list<Squad*>& mySquads);
+	void buildHatchery(std::list<Squad*>& mySquads);
 
-	void BaseArmy(std::list<Squad*>& mySquads, int* armyWanted);
+	void buildTechTree(std::list<Squad*>& mySquads);
+
+	void baseArmy(std::list<Squad*>& mySquads, int* armyWanted);
 }
 
 bool unitInSquad(BWAPI::Unit unit, std::list<Squad*>& mySquads);
-
 
 int transfer_squadType(Squad* origin_Squad, Squad* destination_Squad, BWAPI::UnitType Type, int number);
 
@@ -37,5 +39,7 @@ Squad* getSquad(int Squad_type, int ActionId, std::list<Squad*>& mySquads);
 void enlistUnit(Squad* squad, std::list<Squad*>& mySquads);
 
 bool attackEnnemie(Squad* squad, bool alreadyAttacking);
+
+void DefendB2(Squad* squad);
 
 void morphLurker(Squad* squad);

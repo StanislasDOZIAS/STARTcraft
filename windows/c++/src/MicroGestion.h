@@ -7,6 +7,6 @@ extern UnitCount* myUnits;
 
 
 namespace MicroGestion {
-    bool buildBuilding(BWAPI::UnitType building, BWAPI::TilePosition desiredPos = BWAPI::Broodwar->self()->getStartLocation());
-    BWAPI::Unit getBuilder();
+    bool buildBuilding(BWAPI::UnitType building, BWAPI::TilePosition desiredPos, std::list<Squad*>& mySquads, BWAPI::Unit builder = nullptr);
+    BWAPI::Unit getBuilder(std::list<Squad*>& mySquads);
 }

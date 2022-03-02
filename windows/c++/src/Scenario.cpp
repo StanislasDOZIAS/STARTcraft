@@ -1,14 +1,16 @@
 #include "Scenario.h"
+#include "Squad.h"
+#include "Actions.h"
 
 UnitCount* myUnits = new UnitCount();
 
-int* Scenario(BWAPI::GameWrapper& Broodwar, UnitCount& myUnits, std::list<Squad>& mySquads){
-    countUnits(Broodwar);
+int* Scenario(BWAPI::GameWrapper& Broodwar, UnitCount& myUnits, std::list<Squad*>& mySquads){
+    countUnits(Broodwar, mySquads);
 	return nullptr;
 }
 
 
-void countUnits(BWAPI::GameWrapper& Broodwar)
+void countUnits(BWAPI::GameWrapper& Broodwar, std::list<Squad*>& mySquads)
 {
     const BWAPI::Unitset& myListUnits = BWAPI::Broodwar->self()->getUnits();
 
@@ -30,6 +32,12 @@ void countUnits(BWAPI::GameWrapper& Broodwar)
             (*myUnits).unitBuilding[(*myUnits).building_in_progress] = 0;
         }
         (*myUnits).building_in_progress = BWAPI::UnitTypes::Unknown;
+        for (Squad* squad : mySquads) {
+            if (squad->get_type() == 1 && squad->get_Action() == 1) {
+                squad->add_Unit((*myUnits).builder);
+            }
+        }
+        (*myUnits).builder = nullptr;
     }
 
     for (BWAPI::Unit unit : myListUnits)
@@ -42,6 +50,7 @@ void countUnits(BWAPI::GameWrapper& Broodwar)
                         (*myUnits).blocked_minerals -= unit->getType().mineralPrice();
                         (*myUnits).blocked_gas -= unit->getType().gasPrice();
                         (*myUnits).building_in_progress = BWAPI::UnitTypes::Unknown;
+                        (*myUnits).builder = nullptr;
                     }
                     (*myUnits).unitBuilding[unit->getType()] = 2;
                 }
@@ -78,17 +87,9 @@ void countUnits(BWAPI::GameWrapper& Broodwar)
                 (*myUnits).larva = unit;
             }
 
-            if (unit->getType() == BWAPI::UnitTypes::Zerg_Hydralisk) {
-                (*myUnits).hydra = unit;
-            }
 
             if (unit->getType() == BWAPI::UnitTypes::Zerg_Overlord) {
                 (*myUnits).supplyAvailable += 16;
-            }
-
-
-            if (unit->getType() == BWAPI::UnitTypes::Zerg_Hydralisk) {
-                (*myUnits).hydra = unit;
             }
 
             if (unit->getType() == BWAPI::UnitTypes::Zerg_Lurker) {
@@ -125,14 +126,22 @@ void nextLarvaMorph(BWAPI::GameWrapper& Broodwar) {
 UnitCount::UnitCount(){
 
     building_frame_count = 0;
-    max_frame_building = 24 * 10;
+    max_frame_building = 24 * 15;
     building_in_progress = BWAPI::UnitTypes::Unknown;
     number_Hatchery = 1;
+    secondBaseBuilder = nullptr;
+
+
     blocked_minerals = 0;
     blocked_gas = 0;
+
+
     larva = nullptr;
-    hydra = nullptr;
     nextUnitFromLarva = BWAPI::UnitTypes::Unknown;
+
+    BWAPI::TilePosition secondBasePos = BWAPI::TilePositions::Origin;
+    bool foundSecondBasePos = false;
+    builder = nullptr;
 
     std::memset(unitBuilding, 0, 4*int(BWAPI::UnitTypes::Unknown));
     std::memset(unitOwned, 0, 4*int(BWAPI::UnitTypes::Unknown));

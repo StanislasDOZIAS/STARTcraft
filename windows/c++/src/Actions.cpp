@@ -1,4 +1,10 @@
 #include "Actions.h"
+#include "MicroGestion.h"
+#include "BWEM/bwem.h"
+
+using namespace BWEM;
+using namespace BWEM::BWAPI_ext;
+using namespace BWEM::utils;
 
 // Build more supply if we are going to run out soon
 void Actions::buildAdditionalSupply()
@@ -62,7 +68,7 @@ void Actions::Economy(std::list<Squad*>& mySquads) {
 
     if ((*myUnits).unitBuilding[BWAPI::UnitTypes::Zerg_Extractor] == 3) {
         BWAPI::Unit Extractor = Tools::GetUnitOfType(BWAPI::UnitTypes::Zerg_Extractor);
-        gas = getSquad(1, 2, mySquads); //1 : squad of type worker, 2 : squad which gather minerals
+        gas = getSquad(1, 2, mySquads); //1 : squad of type worker, 2 : squad which gather gas
         if (gas == nullptr) {
             gas = new WorkerSquad(4);
             gas->changeAction(2);
@@ -79,27 +85,48 @@ void Actions::Economy(std::list<Squad*>& mySquads) {
     }
 }
 
-void Actions::Building_tree(std::list<Squad*>& mySquads) {
-
+void Actions::buildHatchery(std::list<Squad*>& mySquads){
     BWAPI::TilePosition desiredPos = BWAPI::Broodwar->self()->getStartLocation();
-    if (((*myUnits).unitMorphing[BWAPI::UnitTypes::Zerg_Hatchery] == 0) && (BWAPI::Broodwar->self()->minerals() >= BWAPI::UnitTypes::Zerg_Hatchery.mineralPrice() * (*myUnits).number_Hatchery + (*myUnits).blocked_minerals)) {
-        if (MicroGestion::buildBuilding(BWAPI::UnitTypes::Zerg_Hatchery, desiredPos)) {
-            (*myUnits).unitMorphing[int(BWAPI::UnitTypes::Zerg_Hatchery)] = 1;
+
+    // Second Base
+    if ((*myUnits).foundSecondBasePos && (*myUnits).number_Hatchery == 1) {
+        if (((*myUnits).unitMorphing[BWAPI::UnitTypes::Zerg_Hatchery] == 0) && (BWAPI::Broodwar->self()->supplyUsed() > 22) &&
+            (BWAPI::Broodwar->self()->minerals() >= 200) && ( ((*myUnits).secondBaseBuilder == nullptr) || !((*myUnits).secondBaseBuilder->exists()) )) {
+            (*myUnits).secondBaseBuilder = MicroGestion::getBuilder(mySquads);
+            (*myUnits).secondBaseBuilder->move(static_cast<BWAPI::Position>((*myUnits).secondBasePos));
+        }
+
+        if (((*myUnits).unitMorphing[BWAPI::UnitTypes::Zerg_Hatchery] == 0) &&
+            (BWAPI::Broodwar->self()->minerals() >= 300 + (*myUnits).blocked_minerals)) {
+            if (MicroGestion::buildBuilding(BWAPI::UnitTypes::Zerg_Hatchery, (*myUnits).secondBasePos, mySquads, (*myUnits).secondBaseBuilder)){
+                (*myUnits).unitMorphing[int(BWAPI::UnitTypes::Zerg_Hatchery)] = 1;
+            }
         }
     }
+    // Additional Hatcheries
+    else if (((*myUnits).unitMorphing[BWAPI::UnitTypes::Zerg_Hatchery] == 0) && (BWAPI::Broodwar->self()->minerals() >= BWAPI::UnitTypes::Zerg_Hatchery.mineralPrice() * (*myUnits).number_Hatchery + (*myUnits).blocked_minerals)) {
+        if (MicroGestion::buildBuilding(BWAPI::UnitTypes::Zerg_Hatchery, desiredPos, mySquads)) {
+            (*myUnits).unitMorphing[int(BWAPI::UnitTypes::Zerg_Hatchery)] = 1;
+        }
+
+    }
+}
+
+void Actions::buildTechTree(std::list<Squad*>& mySquads){
+    BWAPI::TilePosition desiredPos = BWAPI::Broodwar->self()->getStartLocation();
 
     // We will follow the following Tech tree Building :
     // Vespin geyser extractor, Spawning pool -> Lair, Hydralisk's Den, Evolution Chamber -> Queen's Nest
 
     if (((*myUnits).unitBuilding[BWAPI::UnitTypes::Zerg_Extractor] == 0) && ((*myUnits).number_Hatchery >= 2) && ((*myUnits).unitOwned[BWAPI::UnitTypes::Zerg_Drone] + (*myUnits).unitMorphing[BWAPI::UnitTypes::Zerg_Drone] >= 12) &&
         (BWAPI::Broodwar->self()->minerals() >= BWAPI::UnitTypes::Zerg_Extractor.mineralPrice() + (*myUnits).blocked_minerals) &&
-        MicroGestion::buildBuilding(BWAPI::UnitTypes::Zerg_Extractor, desiredPos)) {
+        MicroGestion::buildBuilding(BWAPI::UnitTypes::Zerg_Extractor, desiredPos, mySquads)) {
     }
 
 
     if (((*myUnits).unitBuilding[BWAPI::UnitTypes::Zerg_Spawning_Pool] == 0) && ((*myUnits).unitBuilding[BWAPI::UnitTypes::Zerg_Extractor] > 1) &&
         (BWAPI::Broodwar->self()->minerals() >= BWAPI::UnitTypes::Zerg_Spawning_Pool.mineralPrice() + (*myUnits).blocked_minerals) &&
-        MicroGestion::buildBuilding(BWAPI::UnitTypes::Zerg_Spawning_Pool, desiredPos)) {
+        MicroGestion::buildBuilding(BWAPI::UnitTypes::Zerg_Spawning_Pool, desiredPos, mySquads)) {
     }
 
 
@@ -117,7 +144,7 @@ void Actions::Building_tree(std::list<Squad*>& mySquads) {
 
     if (((*myUnits).unitBuilding[BWAPI::UnitTypes::Zerg_Hydralisk_Den] == 0) && ((*myUnits).unitBuilding[BWAPI::UnitTypes::Zerg_Lair] > 0) &&
         (BWAPI::Broodwar->self()->minerals() >= BWAPI::UnitTypes::Zerg_Hydralisk_Den.mineralPrice() + (*myUnits).blocked_minerals) && (BWAPI::Broodwar->self()->gas() >= BWAPI::UnitTypes::Zerg_Hydralisk_Den.gasPrice() + (*myUnits).blocked_gas) &&
-        MicroGestion::buildBuilding(BWAPI::UnitTypes::Zerg_Hydralisk_Den, desiredPos)) {
+        MicroGestion::buildBuilding(BWAPI::UnitTypes::Zerg_Hydralisk_Den, desiredPos, mySquads)) {
     }
 
     if (((*myUnits).unitBuilding[BWAPI::UnitTypes::Zerg_Hydralisk_Den] == 3) && ((*myUnits).unitBuilding[BWAPI::UnitTypes::Zerg_Lair] == 3) &&
@@ -155,7 +182,7 @@ void Actions::Building_tree(std::list<Squad*>& mySquads) {
 
     if (((*myUnits).unitBuilding[BWAPI::UnitTypes::Zerg_Evolution_Chamber] == 0) && ((*myUnits).upgrades[BWAPI::UpgradeTypes::Grooved_Spines] == 1) &&
         (BWAPI::Broodwar->self()->minerals() >= BWAPI::UnitTypes::Zerg_Evolution_Chamber.mineralPrice() + (*myUnits).blocked_minerals) &&
-        MicroGestion::buildBuilding(BWAPI::UnitTypes::Zerg_Evolution_Chamber, desiredPos)) {
+        MicroGestion::buildBuilding(BWAPI::UnitTypes::Zerg_Evolution_Chamber, desiredPos, mySquads)) {
     }
 
     if (((*myUnits).unitBuilding[BWAPI::UnitTypes::Zerg_Spawning_Pool] == 3) && ((*myUnits).upgrades[BWAPI::UpgradeTypes::Metabolic_Boost] == 0) &&
@@ -204,7 +231,7 @@ void Actions::Building_tree(std::list<Squad*>& mySquads) {
     }
 }
 
-void Actions::BaseArmy(std::list<Squad*>& mySquads, int* armyWanted) {
+void Actions::baseArmy(std::list<Squad*>& mySquads, int* armyWanted) {
     int ActionId = 2;
     ArmySquad* Army = static_cast<ArmySquad*>(getSquad(2, ActionId, mySquads));
     if (Army == nullptr) {
@@ -222,10 +249,11 @@ void Actions::BaseArmy(std::list<Squad*>& mySquads, int* armyWanted) {
     if (attackEnnemie(Army, Army->alreadyAttacking)) {
         Army->alreadyAttacking = true;
     }
+    else {
+        DefendB2(Army);
+    }
 
 }
-
-
 
 
 //Usefull functions
@@ -323,13 +351,27 @@ bool attackEnnemie(Squad* squad, bool alreadyAttacking) {
     return false;
 }
 
+void DefendB2(Squad* squad) {
+    for (BWAPI::Unit unit : squad->get_Units()) {
+        if (((unit->getType() == BWAPI::UnitTypes::Zerg_Zergling) || (unit->getType() == BWAPI::UnitTypes::Zerg_Hydralisk)) && unit->isIdle()) {
+            for (BWAPI::TilePosition ennemyLocation : BWAPI::Broodwar->getStartLocations()) {
+                if (ennemyLocation != BWAPI::Broodwar->self()->getStartLocation()) {
+                    unit->attack(static_cast <BWAPI::Position>((*myUnits).secondBasePos), false);
+                }
+            }
+        }
+    }
+
+}
+
+
 void morphLurker(Squad* squad) {
     if (((*myUnits).tech[BWAPI::TechTypes::Lurker_Aspect] == 1) && ((*squad).unitOwned[BWAPI::UnitTypes::Zerg_Hydralisk] >= 1) &&
         ((*squad).unitOwned[BWAPI::UnitTypes::Zerg_Lurker] + (*squad).unitMorphing[BWAPI::UnitTypes::Zerg_Lurker] < (*squad).unitWanted[BWAPI::UnitTypes::Zerg_Lurker]) &&
         (BWAPI::Broodwar->self()->minerals() >= BWAPI::UnitTypes::Zerg_Lurker.mineralPrice() + (*myUnits).blocked_minerals) && (BWAPI::Broodwar->self()->gas() >= BWAPI::UnitTypes::Zerg_Lurker.gasPrice() + (*myUnits).blocked_gas)) {
         for (BWAPI::Unit unit : squad->get_Units()) {
             if (unit->getType() == BWAPI::UnitTypes::Zerg_Hydralisk) {
-                if ((*myUnits).hydra->morph(BWAPI::UnitTypes::Zerg_Lurker)) {
+                if (unit->morph(BWAPI::UnitTypes::Zerg_Lurker)) {
                     break;
                 }
             }

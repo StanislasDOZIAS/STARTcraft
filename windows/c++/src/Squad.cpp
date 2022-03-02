@@ -17,7 +17,7 @@ Squad::Squad(int Squad_type){
 }
 
 
-BWAPI::Unit Squad::remove_UnitType(BWAPI::UnitType& Type) {
+BWAPI::Unit Squad::remove_UnitType(BWAPI::UnitType Type) {
 	for (BWAPI::Unit unit : Units) {
 		if (unit->getType() == Type && (unit->exists())){
 			remove(Units.begin(), Units.end(), unit);
@@ -89,7 +89,7 @@ void Squad::countSquadUnits() {
 
 WorkerSquad::WorkerSquad(int size){
 	type = 1;
-	Action = 0;
+	Action = 0; //1 if minerals, 2 if gas
 	unitWanted[BWAPI::UnitTypes::Zerg_Drone] = size;
 }
 
