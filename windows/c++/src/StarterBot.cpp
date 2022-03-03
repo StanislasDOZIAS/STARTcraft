@@ -227,7 +227,6 @@ void StarterBot::onUnitComplete(BWAPI::Unit unit)
     // Units
     Squad* squad = getSquadUnit(unit, mySquads);
     if ((squad == nullptr) && (unit->getPlayer() == BWAPI::Broodwar->self()) && (!unit->getType().isBuilding()) && (unit->getType() != BWAPI::UnitTypes::Zerg_Larva)) {
-        std::cout << "Type " << unit->getType() << " ID " << unit->getID() << std::endl;
         mySquads.front()->add_Unit(unit);
     }
 

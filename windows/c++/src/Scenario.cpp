@@ -91,12 +91,6 @@ void countUnits(BWAPI::GameWrapper& Broodwar, std::list<Squad*>& mySquads)
             if (unit->getType() == BWAPI::UnitTypes::Zerg_Overlord) {
                 (*myUnits).supplyAvailable += 16;
             }
-
-            if (unit->getType() == BWAPI::UnitTypes::Zerg_Lurker) {
-                if (unit->isIdle()) {
-                    unit->burrow();
-                }
-            }
         }
     }
     
@@ -150,8 +144,8 @@ UnitCount::UnitCount(){
     std::memset(upgrades, 0, 4*int(BWAPI::UpgradeTypes::Unknown));
 
     std::memset(unitWanted, 0, 4*int(BWAPI::UnitTypes::Unknown));
-    unitWanted[BWAPI::UnitTypes::Zerg_Drone] = 20;
-    unitWanted[BWAPI::UnitTypes::Zerg_Zergling] = 30;
-    unitWanted[BWAPI::UnitTypes::Zerg_Hydralisk] = 50;
-    unitWanted[BWAPI::UnitTypes::Zerg_Lurker] = 5;
+    unitWanted[BWAPI::UnitTypes::Zerg_Drone] = 15;
+    unitWanted[BWAPI::UnitTypes::Zerg_Zergling] = 20;
+    unitWanted[BWAPI::UnitTypes::Zerg_Hydralisk] = 10;
+    unitWanted[BWAPI::UnitTypes::Zerg_Lurker] = 1;
 }

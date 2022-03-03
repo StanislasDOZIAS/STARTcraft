@@ -14,8 +14,6 @@ bool MicroGestion::buildBuilding(BWAPI::UnitType building, BWAPI::TilePosition d
     bool buildOnCreep = building.requiresCreep();
     BWAPI::TilePosition buildPos = BWAPI::Broodwar->getBuildLocation(building, desiredPos, maxBuildRange, buildOnCreep);
 
-    std::cout << "Build Pos : " << buildPos<<std::endl;
-
     if (builder->build(building, buildPos)) {
         (*myUnits).builder = builder;
         (*myUnits).unitBuilding[building] = 1;
@@ -43,12 +41,18 @@ BWAPI::Unit MicroGestion::getBuilder(std::list<Squad*>& mySquads) {
     return builder;
 }
 
-bool MicroGestion::EnnemiesClose(BWAPI::Unit unit) {
-    bool ret = false;
-    for (BWAPI::Unit u : unit->getUnitsInRadius(200)) {
-        if (u->getPlayer() == BWAPI::Broodwar->enemy()) {
-            ret = true;
+bool MicroGestion::detectEnnemieClose(BWAPI::Unit unit) {
+    int rangeDetection;
+    if (unit->getType()==BWAPI::UnitTypes::Zerg_Lurker){
+        rangeDetection = BWAPI::UnitTypes::Zerg_Lurker.groundWeapon().maxRange()-20;
+    }
+    else {
+        rangeDetection = unit->getType().sightRange()+10;
+    }
+    for (BWAPI::Unit u : BWAPI::Broodwar->enemy()->getUnits()) {
+        if (unit->getDistance(u) <= rangeDetection){
+            return true;
         }
     }
-    return ret;
+    return false;
 }

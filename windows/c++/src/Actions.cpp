@@ -185,7 +185,7 @@ void Actions::buildTechTree(std::list<Squad*>& mySquads){
         MicroGestion::buildBuilding(BWAPI::UnitTypes::Zerg_Evolution_Chamber, desiredPos, mySquads)) {
     }
 
-    if (((*myUnits).unitBuilding[BWAPI::UnitTypes::Zerg_Spawning_Pool] == 3) && ((*myUnits).upgrades[BWAPI::UpgradeTypes::Metabolic_Boost] == 0) &&
+    if (((*myUnits).unitBuilding[BWAPI::UnitTypes::Zerg_Spawning_Pool] == 3) && ((*myUnits).upgrades[BWAPI::UpgradeTypes::Metabolic_Boost] == 0) && ((*myUnits).tech[BWAPI::TechTypes::Lurker_Aspect] == 1) &&
         (BWAPI::Broodwar->self()->minerals() >= BWAPI::UpgradeTypes::Metabolic_Boost.mineralPrice() + (*myUnits).blocked_minerals) && (BWAPI::Broodwar->self()->gas() >= BWAPI::UpgradeTypes::Metabolic_Boost.gasPrice() + (*myUnits).blocked_gas)) {
         for (BWAPI::Unit u : BWAPI::Broodwar->self()->getUnits()) {
             if (u->getType() == BWAPI::UnitTypes::Zerg_Spawning_Pool) {
@@ -334,32 +334,48 @@ void enlistUnit(Squad* squad, std::list<Squad*>& mySquads) {
     }
 }
 
+
+
 bool attackEnnemie(Squad* squad, bool alreadyAttacking) {
     bool wantAttack = (((*squad).unitOwned[BWAPI::UnitTypes::Zerg_Zergling] >= (*squad).unitWanted[BWAPI::UnitTypes::Zerg_Zergling]) && ((*squad).unitOwned[BWAPI::UnitTypes::Zerg_Hydralisk] >= (*squad).unitWanted[BWAPI::UnitTypes::Zerg_Hydralisk]));
     if (wantAttack||alreadyAttacking){    
         for (BWAPI::TilePosition ennemyLocation : BWAPI::Broodwar->getStartLocations()) {
             if (ennemyLocation != BWAPI::Broodwar->self()->getStartLocation()) {
-                squad->attack(static_cast <BWAPI::Position>(ennemyLocation));
+                BWAPI::Position target = static_cast <BWAPI::Position>(ennemyLocation);
+                squad->attack(target);
+                return true;
             }
         }
-        return true;
     }
     return false;
 }
 
 void DefendB2(Squad* squad) {
+    BWAPI::Position B2_pos = static_cast <BWAPI::Position>((*myUnits).secondBasePos);
+    BWAPI::Position centerPos = BWAPI::Positions::Origin;
+    int numberPos = 0;
+    for (BWAPI::TilePosition ennemyLocation : BWAPI::Broodwar->getStartLocations()) {
+            centerPos += static_cast <BWAPI::Position>(ennemyLocation);
+            numberPos += 1;
+    }
+    centerPos.x = centerPos.x / numberPos;
+    centerPos.y = centerPos.y / numberPos;
+    
+    BWAPI::Position def_pos;
+    def_pos.x = 0.7 * B2_pos.x + 0.3 * centerPos.x;
+    def_pos.y = 0.95 * B2_pos.y + 0.05 * centerPos.y;
+
     for (BWAPI::Unit unit : squad->get_Units()) {
-        if (((unit->getType() == BWAPI::UnitTypes::Zerg_Zergling) || (unit->getType() == BWAPI::UnitTypes::Zerg_Hydralisk)) && unit->isIdle()) {
-            for (BWAPI::TilePosition ennemyLocation : BWAPI::Broodwar->getStartLocations()) {
-                if (ennemyLocation != BWAPI::Broodwar->self()->getStartLocation()) {
-                    unit->attack(static_cast <BWAPI::Position>((*myUnits).secondBasePos), false);
-                }
+        if ( unit->isIdle()) {
+            unit->attack(def_pos, false);
+        }
+        if (unit->getType() == BWAPI::UnitTypes::Zerg_Lurker) {
+            if (unit->isIdle()) {
+                unit->burrow();
             }
         }
     }
-
 }
-
 
 void morphLurker(Squad* squad) {
     if (((*myUnits).tech[BWAPI::TechTypes::Lurker_Aspect] == 1) && ((*squad).unitOwned[BWAPI::UnitTypes::Zerg_Hydralisk] >= 1) &&
@@ -368,6 +384,7 @@ void morphLurker(Squad* squad) {
         for (BWAPI::Unit unit : squad->get_Units()) {
             if (unit->getType() == BWAPI::UnitTypes::Zerg_Hydralisk) {
                 if (unit->morph(BWAPI::UnitTypes::Zerg_Lurker)) {
+                    (*squad).unitMorphing[BWAPI::UnitTypes::Zerg_Lurker] += 1;
                     break;
                 }
             }

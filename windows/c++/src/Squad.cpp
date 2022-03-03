@@ -47,42 +47,61 @@ void Squad::move(BWAPI::Position position){
 }
 
 void Squad::attack(BWAPI::Position target) {
+	for (BWAPI::Unit unit : Units) {
+		if (MicroGestion::detectEnnemieClose(unit)) {
+			for (BWAPI::Unit u : Units) {
+				if (u->isIdle() && u->canAttack()) {
+					u->attack(target, false);
+				}
+				if (u->getType() == BWAPI::UnitTypes::Zerg_Lurker) {
+					if (MicroGestion::detectEnnemieClose(u)) {
+						if (u->isMoving() || (!u->isBurrowed() && u->isIdle())) {
+							u->burrow();
+						}
+					}
+					else{
+						if (u->isBurrowed()) {
+							u->unburrow();
+						}
+						else {
+							u->move(target, false);
+						}
+					}
+				}
+			}
+			return;
+		}
+	}
 	double slower = 10000;
-	BWAPI::UnitType slowUnit;
+	BWAPI::UnitType slowType = BWAPI::UnitTypes::Zerg_Hydralisk;
 	double temp = 0;
-	for (BWAPI::Unit unit : Units) {
-		temp = std::max(unit->getType().topSpeed(), std::sqrt(unit->getVelocityX()* unit->getVelocityX() + unit->getVelocityY()* unit->getVelocityY()));
-		if (temp < slower) {
-			slower = temp;
-			slowUnit = unit->getType();
+	int min_range = 10000;
+	BWAPI::Unit nearest_slow_unit = nullptr;
+	for (BWAPI::Unit u : Units) {
+		if ((u->getType() == slowType) && u->getDistance(target) < min_range) {
+			nearest_slow_unit = u;
+			min_range = u->getDistance(target);
 		}
 	}
-	for (BWAPI::Unit unit : Units) {
-		if (unit->getType() != slowUnit && !MicroGestion::EnnemiesClose(unit)) {
-			unit->stop()
-		}
-		else {
-			unit->attack(target, false);
-		}
-	}
-	BWAPI::Position center = BWAPI::Position(0, 0);
-	for (BWAPI::Unit unit : Units) {
-		center += unit->getPosition();
-	}
-	if (Units.size() > 0) {
-		center.x /= Units.size();
-		center.y /= Units.size();
-	}
-	for (BWAPI::Unit unit : Units) {
-		unit->attack(target, false);
-		if (unit->getPosition().getDistance(center) > 100) {
-			unit->attack(target, false);
+
+	if (nearest_slow_unit != nullptr) {
+		for (BWAPI::Unit unit : Units) {
+			if (unit->getType() == BWAPI::UnitTypes::Zerg_Lurker) {
+				if (unit->isBurrowed()) {
+					unit->unburrow();
+				}
+				else {
+					unit->move(target, false);
+				}
+			}
+			else if (unit->getType() != slowType) {
+				unit->attack(nearest_slow_unit->getPosition(), false);
+			}
+			else {
+				unit->attack(target, false);
+			}
 		}
 	}
-	/*
-	for (BWAPI::Unit unit : Units) {
-		unit->attack(target, false);
-	}*/
 }
 
 std::vector<BWAPI::Unit>& Squad::get_Units(){
