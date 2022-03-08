@@ -221,12 +221,7 @@ void StarterBot::onUnitComplete(BWAPI::Unit unit)
         if (closestMineral) { unit->rightClick(closestMineral); }
     }
 
-    if ((unit->getPlayer() == BWAPI::Broodwar->self()) && ((unit->getType() == BWAPI::UnitTypes::Zerg_Overlord) &&
-        (*myUnits).foundSecondBasePos && (Tools::CountUnitsOfType(BWAPI::UnitTypes::Zerg_Overlord, BWAPI::Broodwar->self()->getUnits()) == 1))) {
-        unit->move(static_cast <BWAPI::Position>((*myUnits).secondBasePos));
-    }
-
-    // Units
+    // Fill squad 0
     Squad* squad = getSquadUnit(unit, mySquads);
     if ((squad == nullptr) && (unit->getPlayer() == BWAPI::Broodwar->self()) && (!unit->getType().isBuilding()) && (unit->getType() != BWAPI::UnitTypes::Zerg_Larva)) {
         mySquads.front()->add_Unit(unit);

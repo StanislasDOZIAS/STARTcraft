@@ -21,6 +21,7 @@ public:
 	void Squad::remove_Unit(BWAPI::Unit unit);
 	void move(BWAPI::Position postion);
 	void attack(BWAPI::Position target);
+	void unlimitedUnitWanted();
 	void changeAction(int ActionId);
 	std::vector<BWAPI::Unit>& get_Units();
 	void countSquadUnits();

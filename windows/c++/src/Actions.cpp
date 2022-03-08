@@ -167,7 +167,7 @@ void Actions::buildTechTree(std::list<Squad*>& mySquads){
     }
 
     if (((*myUnits).unitBuilding[BWAPI::UnitTypes::Zerg_Extractor] == 0) && ((*myUnits).unitOwned[BWAPI::UnitTypes::Zerg_Extractor] == 1) && ((*myUnits).second_extractor == nullptr) &&
-        ((*myUnits).unitBuilding[BWAPI::UnitTypes::Zerg_Lair] == 2 || (*myUnits).unitOwned[BWAPI::UnitTypes::Zerg_Lair] >= 1) &&
+        ((*myUnits).unitOwned[BWAPI::UnitTypes::Zerg_Lair] >= 1) &&
         (BWAPI::Broodwar->self()->minerals() >= BWAPI::UnitTypes::Zerg_Extractor.mineralPrice() + (*myUnits).blocked_minerals) &&
         MicroGestion::buildBuilding(BWAPI::UnitTypes::Zerg_Extractor, (*myUnits).secondBasePos, mySquads)) {
     }
@@ -260,6 +260,28 @@ void Actions::buildTechTree(std::list<Squad*>& mySquads){
             if (u->getType() == BWAPI::UnitTypes::Zerg_Evolution_Chamber) {
                 if (u->upgrade(BWAPI::UpgradeTypes::Zerg_Melee_Attacks)) {
                     (*myUnits).upgrades[BWAPI::UpgradeTypes::Zerg_Melee_Attacks] += 1;
+                }
+            }
+        }
+    }
+
+    if (((*myUnits).unitOwned[BWAPI::UnitTypes::Zerg_Lair] >= 1) && ((*myUnits).upgrades[BWAPI::UpgradeTypes::Muscular_Augments] == 1) && ((*myUnits).upgrades[BWAPI::UpgradeTypes::Pneumatized_Carapace] == 0) &&
+        (BWAPI::Broodwar->self()->minerals() >= BWAPI::UpgradeTypes::Pneumatized_Carapace.mineralPrice() + (*myUnits).blocked_minerals) && (BWAPI::Broodwar->self()->gas() >= BWAPI::UpgradeTypes::Pneumatized_Carapace.gasPrice() + (*myUnits).blocked_gas)) {
+        for (BWAPI::Unit u : BWAPI::Broodwar->self()->getUnits()) {
+            if (u->getType() == BWAPI::UnitTypes::Zerg_Lair) {
+                if (u->upgrade(BWAPI::UpgradeTypes::Pneumatized_Carapace)) {
+                    (*myUnits).upgrades[BWAPI::UpgradeTypes::Pneumatized_Carapace] = 1;
+                }
+            }
+        }
+    }
+
+    if (((*myUnits).unitOwned[BWAPI::UnitTypes::Zerg_Lair] >= 1) && ((*myUnits).upgrades[BWAPI::UpgradeTypes::Pneumatized_Carapace] == 1) && ((*myUnits).upgrades[BWAPI::UpgradeTypes::Antennae] == 0) &&
+        (BWAPI::Broodwar->self()->minerals() >= BWAPI::UpgradeTypes::Antennae.mineralPrice() + (*myUnits).blocked_minerals) && (BWAPI::Broodwar->self()->gas() >= BWAPI::UpgradeTypes::Antennae.gasPrice() + (*myUnits).blocked_gas)) {
+        for (BWAPI::Unit u : BWAPI::Broodwar->self()->getUnits()) {
+            if (u->getType() == BWAPI::UnitTypes::Zerg_Lair) {
+                if (u->upgrade(BWAPI::UpgradeTypes::Antennae)) {
+                    (*myUnits).upgrades[BWAPI::UpgradeTypes::Antennae] = 1;
                 }
             }
         }
@@ -375,6 +397,9 @@ bool attackEnnemie(Squad* squad, bool alreadyAttacking) {
     bool wantAttack = (((*squad).unitOwned[BWAPI::UnitTypes::Zerg_Zergling] >= (*squad).unitWanted[BWAPI::UnitTypes::Zerg_Zergling]) &&
                         ((*squad).unitOwned[BWAPI::UnitTypes::Zerg_Hydralisk] >= (*squad).unitWanted[BWAPI::UnitTypes::Zerg_Hydralisk]) &&
                         ((*squad).unitOwned[BWAPI::UnitTypes::Zerg_Lurker] >= (*squad).unitWanted[BWAPI::UnitTypes::Zerg_Lurker]));
+    if (wantAttack && !alreadyAttacking) {
+        squad->unlimitedUnitWanted();
+    }
     if (wantAttack||alreadyAttacking){
         for (BWAPI::TilePosition ennemyLocation : BWAPI::Broodwar->getStartLocations()) {
             if (ennemyLocation != BWAPI::Broodwar->self()->getStartLocation()) {
@@ -411,8 +436,12 @@ void DefendB2(Squad* squad) {
                 unit->burrow();
             }
         }
+        if (unit->getType() == BWAPI::UnitTypes::Zerg_Overlord) {
+            unit->move(def_pos, false);
+        }
     }
 }
+
 
 void morphLurker(Squad* squad) {
     if (((*myUnits).tech[BWAPI::TechTypes::Lurker_Aspect] == 1) && ((*squad).unitOwned[BWAPI::UnitTypes::Zerg_Hydralisk] >= 1) &&

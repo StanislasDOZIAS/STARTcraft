@@ -116,7 +116,7 @@ void nextLarvaMorph(BWAPI::GameWrapper& Broodwar) {
             (*myUnits).nextUnitFromLarva = BWAPI::UnitTypes::Zerg_Drone;
         }
         else {
-            (*myUnits).nextUnitFromLarva = BWAPI::UnitTypes::Zerg_Zergling;
+            (*myUnits).nextUnitFromLarva = BWAPI::UnitTypes::Zerg_Hydralisk;
         }
         
     }

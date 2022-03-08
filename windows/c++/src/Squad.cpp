@@ -47,6 +47,20 @@ void Squad::move(BWAPI::Position position){
 }
 
 void Squad::attack(BWAPI::Position target) {
+
+	double slower = 10000;
+	BWAPI::UnitType slowType = BWAPI::UnitTypes::Zerg_Hydralisk;
+	double temp = 0;
+	int min_range = 10000;
+	BWAPI::Unit nearest_slow_unit = nullptr;
+	for (BWAPI::Unit u : Units) {
+		if ((u->getType() == slowType) && u->getDistance(target) < min_range) {
+			nearest_slow_unit = u;
+			min_range = u->getDistance(target);
+		}
+	}
+
+
 	for (BWAPI::Unit unit : Units) {
 		if (MicroGestion::detectEnnemieClose(unit)) {
 			for (BWAPI::Unit u : Units) {
@@ -68,21 +82,20 @@ void Squad::attack(BWAPI::Position target) {
 						}
 					}
 				}
+				if (unit->getType() == BWAPI::UnitTypes::Zerg_Overlord){
+					if (nearest_slow_unit != nullptr) {
+						unit->move(nearest_slow_unit->getPosition(), false);
+					}
+					else {
+						unit->move(target, false);
+					}
+				}
+
 			}
 			return;
 		}
 	}
-	double slower = 10000;
-	BWAPI::UnitType slowType = BWAPI::UnitTypes::Zerg_Hydralisk;
-	double temp = 0;
-	int min_range = 10000;
-	BWAPI::Unit nearest_slow_unit = nullptr;
-	for (BWAPI::Unit u : Units) {
-		if ((u->getType() == slowType) && u->getDistance(target) < min_range) {
-			nearest_slow_unit = u;
-			min_range = u->getDistance(target);
-		}
-	}
+
 
 	if (nearest_slow_unit != nullptr) {
 		for (BWAPI::Unit unit : Units) {
@@ -94,6 +107,9 @@ void Squad::attack(BWAPI::Position target) {
 					unit->move(target, false);
 				}
 			}
+			else if (unit->getType() == BWAPI::UnitTypes::Zerg_Overlord) {
+				unit->move(nearest_slow_unit->getPosition(), false);
+			}
 			else if (unit->getType() != slowType) {
 				unit->attack(nearest_slow_unit->getPosition(), false);
 			}
@@ -102,6 +118,16 @@ void Squad::attack(BWAPI::Position target) {
 			}
 		}
 	}
+}
+
+void Squad::unlimitedUnitWanted() {
+	for (int unittype = 0; unittype < BWAPI::UnitTypes::Unknown; ++unittype) {
+		if (unitWanted[unittype]>0) {
+			unitWanted[unittype] = 200;
+		}
+	}
+	unitWanted[BWAPI::UnitTypes::Zerg_Lurker] = 10;
+	unitWanted[BWAPI::UnitTypes::Zerg_Overlord] = 1;
 }
 
 std::vector<BWAPI::Unit>& Squad::get_Units(){
@@ -159,4 +185,5 @@ ArmySquad::ArmySquad(int* armyWanted) {
 	for (int unittype = 0; unittype < BWAPI::UnitTypes::Unknown; ++unittype) {
 		unitWanted[unittype] = armyWanted[unittype];
 	}
+	unitWanted[int(BWAPI::UnitTypes::Zerg_Overlord)] = 1;
 }
