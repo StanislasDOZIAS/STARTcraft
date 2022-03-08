@@ -171,6 +171,12 @@ void StarterBot::onUnitDestroy(BWAPI::Unit unit)
 void StarterBot::onUnitMorph(BWAPI::Unit unit)
 {
 
+    if ((*myUnits).first_extractor != nullptr && unit->getID() == (*myUnits).first_extractor->getID()) {
+        (*myUnits).first_extractor = nullptr;
+    }
+    if ((*myUnits).second_extractor != nullptr && unit->getID() == (*myUnits).second_extractor->getID()) {
+        (*myUnits).second_extractor = nullptr;
+    }
 }
 
 // Called whenever a text is sent to the game by a user
@@ -196,7 +202,18 @@ void StarterBot::onUnitComplete(BWAPI::Unit unit)
     if ((unit->getPlayer() == BWAPI::Broodwar->self()) && (unit->getType().isBuilding())) {
         std::cout << "finished building : " << unit->getType()<< std::endl;
         (*myUnits).unitBuilding[unit->getType()] = 0;
+        if (unit->getType() == BWAPI::UnitTypes::Zerg_Extractor) {
+            if (unit->getDistance(static_cast <BWAPI::Position>(BWAPI::Broodwar->self()->getStartLocation())) < unit->getDistance(static_cast <BWAPI::Position>((*myUnits).secondBasePos)) &&
+                (*myUnits).first_extractor == nullptr) {
+                (*myUnits).first_extractor = unit;
+            }
+            if (unit->getDistance(static_cast <BWAPI::Position>(BWAPI::Broodwar->self()->getStartLocation())) > unit->getDistance(static_cast <BWAPI::Position>((*myUnits).secondBasePos)) &&
+                (*myUnits).second_extractor == nullptr) {
+                (*myUnits).second_extractor = unit;
+            }
+        }
     }
+
     if ( (unit->getPlayer() == BWAPI::Broodwar->self()) && ((unit->getType() == BWAPI::UnitTypes::Zerg_Overlord)|| (unit->getType() == BWAPI::UnitTypes::Zerg_Drone)) ) {
         BWAPI::Unit closestMineral = Tools::GetClosestUnitTo(unit, BWAPI::Broodwar->getMinerals());
 

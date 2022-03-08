@@ -21,6 +21,27 @@ BWAPI::Unit Tools::GetClosestUnitTo(BWAPI::Unit unit, const BWAPI::Unitset& unit
     return GetClosestUnitTo(unit->getPosition(), units);
 }
 
+BWAPI::Unit Tools::GetClosestUnitOfTypeTo(BWAPI::Position p, const BWAPI::Unitset& units, BWAPI::UnitType type)
+{
+    BWAPI::Unit closestUnit = nullptr;
+
+    for (auto& u : units)
+    {
+        if (u->getType() == type &&(!closestUnit || u->getDistance(p) < closestUnit->getDistance(p)))
+        {
+            closestUnit = u;
+        }
+    }
+
+    return closestUnit;
+}
+
+BWAPI::Unit Tools::GetClosestUnitOfTypeTo(BWAPI::Unit unit, const BWAPI::Unitset& units, BWAPI::UnitType type)
+{
+    if (!unit) { return nullptr; }
+    return GetClosestUnitOfTypeTo(unit->getPosition(), units, type);
+}
+
 int Tools::CountUnitsOfType(BWAPI::UnitType type, const BWAPI::Unitset& units)
 {
     int sum = 0;
@@ -34,6 +55,7 @@ int Tools::CountUnitsOfType(BWAPI::UnitType type, const BWAPI::Unitset& units)
 
     return sum;
 }
+
 
 BWAPI::Unit Tools::GetUnitOfType(BWAPI::UnitType type)
 {

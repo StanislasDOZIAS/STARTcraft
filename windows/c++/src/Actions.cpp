@@ -1,5 +1,6 @@
 #include "Actions.h"
 #include "MicroGestion.h"
+#include "Tools.h"
 #include "BWEM/bwem.h"
 
 using namespace BWEM;
@@ -48,7 +49,8 @@ void Actions::morphFromLarva() {
 
 void Actions::Economy(std::list<Squad*>& mySquads) {
     //BWAPI::Unit builder = nullptr;
-    Squad* gas;
+    Squad* gas1;
+    Squad* gas2;
     Squad* mineral;
     mineral = getSquad(1, 1, mySquads); //first 1 : squad of type worker, second 1 : squad which gather minerals
     if (mineral == nullptr) {
@@ -66,21 +68,39 @@ void Actions::Economy(std::list<Squad*>& mySquads) {
         if (closestMineral && unit->isIdle()) { unit->rightClick(closestMineral); }
     }
 
-    if ((*myUnits).unitOwned[BWAPI::UnitTypes::Zerg_Extractor] == 1) {
-        BWAPI::Unit Extractor = Tools::GetUnitOfType(BWAPI::UnitTypes::Zerg_Extractor);
-        gas = getSquad(1, 2, mySquads); //1 : squad of type worker, 2 : squad which gather gas
-        if (gas == nullptr) {
-            gas = new WorkerSquad(4);
-            gas->changeAction(2);
-            enlistUnit(gas, mySquads);
-            mySquads.push_back(gas);
+    if ((*myUnits).first_extractor != nullptr) {
+        int ActionID = 12;
+        gas1 = getSquad(1, ActionID, mySquads); //1 : squad of type worker, 12 : squad which gather gas on first base
+        if (gas1 == nullptr) {
+            gas1 = new WorkerSquad(4);
+            gas1->changeAction(ActionID);
+            enlistUnit(gas1, mySquads);
+            mySquads.push_back(gas1);
         }
-        gas->countSquadUnits();
-        if (gas->get_Units().size() < 4) {
-            transfer_squadType(mineral, gas, BWAPI::UnitTypes::Zerg_Drone, 4 - gas->get_Units().size());
+        gas1->countSquadUnits();
+        if (gas1->get_Units().size() < 4) {
+            transfer_squadType(mineral, gas1, BWAPI::UnitTypes::Zerg_Drone, 4 - gas1->get_Units().size());
         }
-        for (BWAPI::Unit unit : gas->get_Units()) {
-            if (unit->isIdle() || unit->isGatheringMinerals()) { unit->rightClick(Extractor); }
+        for (BWAPI::Unit unit : gas1->get_Units()) {
+            if (unit->isIdle() || unit->isGatheringMinerals()) { unit->rightClick((*myUnits).first_extractor); }
+        }
+    }
+
+    if ((*myUnits).second_extractor != nullptr) {
+        int ActionID = 22;
+        gas2 = getSquad(1, ActionID, mySquads); //1 : squad of type worker, 22 : squad which gather gas on second base
+        if (gas2 == nullptr) {
+            gas2 = new WorkerSquad(4);
+            gas2->changeAction(ActionID);
+            enlistUnit(gas2, mySquads);
+            mySquads.push_back(gas2);
+        }
+        gas2->countSquadUnits();
+        if (gas2->get_Units().size() < 4) {
+            transfer_squadType(mineral, gas2, BWAPI::UnitTypes::Zerg_Drone, 4 - gas2->get_Units().size());
+        }
+        for (BWAPI::Unit unit : gas2->get_Units()) {
+            if (unit->isIdle() || unit->isGatheringMinerals()) { unit->rightClick((*myUnits).second_extractor); }
         }
     }
 }
@@ -90,7 +110,6 @@ void Actions::buildHatchery(std::list<Squad*>& mySquads){
 
     // Second Base
     if ((*myUnits).foundSecondBasePos && (*myUnits).number_Hatchery == 1) {
-
 
         if (((*myUnits).unitBuilding[BWAPI::UnitTypes::Zerg_Hatchery] == 0) && (BWAPI::Broodwar->self()->supplyUsed() > 22) &&
             (BWAPI::Broodwar->self()->minerals() >= 200) && ( ((*myUnits).secondBaseBuilder == nullptr) || !((*myUnits).secondBaseBuilder->exists()) )) {
@@ -147,6 +166,12 @@ void Actions::buildTechTree(std::list<Squad*>& mySquads){
         }
     }
 
+    if (((*myUnits).unitBuilding[BWAPI::UnitTypes::Zerg_Extractor] == 0) && ((*myUnits).unitOwned[BWAPI::UnitTypes::Zerg_Extractor] == 1) && ((*myUnits).second_extractor == nullptr) &&
+        ((*myUnits).unitBuilding[BWAPI::UnitTypes::Zerg_Lair] == 2 || (*myUnits).unitOwned[BWAPI::UnitTypes::Zerg_Lair] >= 1) &&
+        (BWAPI::Broodwar->self()->minerals() >= BWAPI::UnitTypes::Zerg_Extractor.mineralPrice() + (*myUnits).blocked_minerals) &&
+        MicroGestion::buildBuilding(BWAPI::UnitTypes::Zerg_Extractor, (*myUnits).secondBasePos, mySquads)) {
+    }
+
     if (((*myUnits).unitBuilding[BWAPI::UnitTypes::Zerg_Hydralisk_Den] == 0) && ((*myUnits).unitOwned[BWAPI::UnitTypes::Zerg_Hydralisk_Den] == 0) &&
         ((*myUnits).unitOwned[BWAPI::UnitTypes::Zerg_Lair] > 0) &&
         (BWAPI::Broodwar->self()->minerals() >= BWAPI::UnitTypes::Zerg_Hydralisk_Den.mineralPrice() + (*myUnits).blocked_minerals) && (BWAPI::Broodwar->self()->gas() >= BWAPI::UnitTypes::Zerg_Hydralisk_Den.gasPrice() + (*myUnits).blocked_gas) &&
@@ -164,6 +189,8 @@ void Actions::buildTechTree(std::list<Squad*>& mySquads){
             }
         }
     }
+
+
 
     if (((*myUnits).unitOwned[BWAPI::UnitTypes::Zerg_Hydralisk_Den] >= 1) && ((*myUnits).tech[BWAPI::TechTypes::Lurker_Aspect] == 1) && ((*myUnits).upgrades[BWAPI::UpgradeTypes::Grooved_Spines] == 0) &&
         (BWAPI::Broodwar->self()->minerals() >= BWAPI::UpgradeTypes::Grooved_Spines.mineralPrice() + (*myUnits).blocked_minerals) && (BWAPI::Broodwar->self()->gas() >= BWAPI::UpgradeTypes::Grooved_Spines.gasPrice() + (*myUnits).blocked_gas)) {
@@ -372,8 +399,8 @@ void DefendB2(Squad* squad) {
     centerPos.y = centerPos.y / numberPos;
     
     BWAPI::Position def_pos;
-    def_pos.x = 0.7 * B2_pos.x + 0.3 * centerPos.x;
-    def_pos.y = 0.95 * B2_pos.y + 0.05 * centerPos.y;
+    def_pos.x = 0.8 * B2_pos.x + 0.2 * centerPos.x;
+    def_pos.y = 0.85 * B2_pos.y + 0.15 * centerPos.y;
 
     for (BWAPI::Unit unit : squad->get_Units()) {
         if ( unit->isIdle()) {

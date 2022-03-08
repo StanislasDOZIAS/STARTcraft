@@ -107,12 +107,12 @@ void nextLarvaMorph(BWAPI::GameWrapper& Broodwar) {
     }
 
     else if (((*myUnits).unitOwned[int(BWAPI::UnitTypes::Zerg_Spawning_Pool)] >= 1) &&
-        ((*myUnits).unitOwned[int(BWAPI::UnitTypes::Zerg_Zergling)] + (*myUnits).unitMorphing[int(BWAPI::UnitTypes::Zerg_Zergling)] < (*myUnits).unitWanted[int(BWAPI::UnitTypes::Zerg_Zergling)])) {
+        ((*myUnits).unitOwned[int(BWAPI::UnitTypes::Zerg_Zergling)] + 2*(*myUnits).unitMorphing[int(BWAPI::UnitTypes::Zerg_Zergling)] < (*myUnits).unitWanted[int(BWAPI::UnitTypes::Zerg_Zergling)])) {
         (*myUnits).nextUnitFromLarva = BWAPI::UnitTypes::Zerg_Zergling;
     }
 
     else {
-        if ((*myUnits).unitWanted[BWAPI::UnitTypes::Zerg_Drone] < 15) {
+        if ((*myUnits).unitWanted[BWAPI::UnitTypes::Zerg_Drone] <= 20) {
             (*myUnits).nextUnitFromLarva = BWAPI::UnitTypes::Zerg_Drone;
         }
         else {
@@ -125,7 +125,7 @@ void nextLarvaMorph(BWAPI::GameWrapper& Broodwar) {
 UnitCount::UnitCount(){
 
     building_frame_count = 0;
-    max_frame_building = 24 * 15;
+    max_frame_building = 24 * 20;
     building_in_progress = BWAPI::UnitTypes::Unknown;
     number_Hatchery = 1;
     secondBaseBuilder = nullptr;
@@ -142,6 +142,9 @@ UnitCount::UnitCount(){
     bool foundSecondBasePos = false;
     builder = nullptr;
 
+    first_extractor = nullptr;
+    second_extractor = nullptr;
+
     std::memset(unitBuilding, 0, 4*int(BWAPI::UnitTypes::Unknown));
     std::memset(unitOwned, 0, 4*int(BWAPI::UnitTypes::Unknown));
     std::memset(unitMorphing, 0, 4*int(BWAPI::UnitTypes::Unknown));
@@ -149,7 +152,7 @@ UnitCount::UnitCount(){
     std::memset(upgrades, 0, 4*int(BWAPI::UpgradeTypes::Unknown));
 
     std::memset(unitWanted, 0, 4*int(BWAPI::UnitTypes::Unknown));
-    unitWanted[BWAPI::UnitTypes::Zerg_Drone] = 15;
+    unitWanted[BWAPI::UnitTypes::Zerg_Drone] = 20;
     unitWanted[BWAPI::UnitTypes::Zerg_Zergling] = 10;
     unitWanted[BWAPI::UnitTypes::Zerg_Hydralisk] = 10;
     unitWanted[BWAPI::UnitTypes::Zerg_Lurker] = 4;

@@ -6,6 +6,8 @@ namespace Tools
 {
     BWAPI::Unit GetClosestUnitTo(BWAPI::Position p, const BWAPI::Unitset& units);
     BWAPI::Unit GetClosestUnitTo(BWAPI::Unit unit, const BWAPI::Unitset& units);
+    BWAPI::Unit GetClosestUnitOfTypeTo(BWAPI::Position p, const BWAPI::Unitset& units, BWAPI::UnitType type);
+    BWAPI::Unit GetClosestUnitOfTypeTo(BWAPI::Unit unit, const BWAPI::Unitset& units, BWAPI::UnitType type);
 
     int CountUnitsOfType(BWAPI::UnitType type, const BWAPI::Unitset& units);
 
