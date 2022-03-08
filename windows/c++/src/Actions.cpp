@@ -104,7 +104,7 @@ void Actions::buildHatchery(std::list<Squad*>& mySquads){
         }
     }
     // Additional Hatcheries
-    else if (((*myUnits).unitMorphing[BWAPI::UnitTypes::Zerg_Hatchery] == 0) && (BWAPI::Broodwar->self()->minerals() >= BWAPI::UnitTypes::Zerg_Hatchery.mineralPrice() * (*myUnits).number_Hatchery + (*myUnits).blocked_minerals)) {
+    else if (((*myUnits).unitMorphing[BWAPI::UnitTypes::Zerg_Hatchery] == 0) && (BWAPI::Broodwar->self()->minerals() >= BWAPI::UnitTypes::Zerg_Hatchery.mineralPrice() * 2 + 150 * (*myUnits).number_Hatchery + (*myUnits).blocked_minerals)) {
         if (MicroGestion::buildBuilding(BWAPI::UnitTypes::Zerg_Hatchery, desiredPos, mySquads)) {
             (*myUnits).unitMorphing[int(BWAPI::UnitTypes::Zerg_Hatchery)] = 1;
         }
@@ -337,8 +337,10 @@ void enlistUnit(Squad* squad, std::list<Squad*>& mySquads) {
 
 
 bool attackEnnemie(Squad* squad, bool alreadyAttacking) {
-    bool wantAttack = (((*squad).unitOwned[BWAPI::UnitTypes::Zerg_Zergling] >= (*squad).unitWanted[BWAPI::UnitTypes::Zerg_Zergling]) && ((*squad).unitOwned[BWAPI::UnitTypes::Zerg_Hydralisk] >= (*squad).unitWanted[BWAPI::UnitTypes::Zerg_Hydralisk]));
-    if (wantAttack||alreadyAttacking){    
+    bool wantAttack = (((*squad).unitOwned[BWAPI::UnitTypes::Zerg_Zergling] >= (*squad).unitWanted[BWAPI::UnitTypes::Zerg_Zergling]) &&
+                        ((*squad).unitOwned[BWAPI::UnitTypes::Zerg_Hydralisk] >= (*squad).unitWanted[BWAPI::UnitTypes::Zerg_Hydralisk]) &&
+                        ((*squad).unitOwned[BWAPI::UnitTypes::Zerg_Lurker] >= (*squad).unitWanted[BWAPI::UnitTypes::Zerg_Lurker]));
+    if (wantAttack||alreadyAttacking){
         for (BWAPI::TilePosition ennemyLocation : BWAPI::Broodwar->getStartLocations()) {
             if (ennemyLocation != BWAPI::Broodwar->self()->getStartLocation()) {
                 BWAPI::Position target = static_cast <BWAPI::Position>(ennemyLocation);

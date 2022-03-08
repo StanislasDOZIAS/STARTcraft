@@ -4,9 +4,18 @@
 
 UnitCount* myUnits = new UnitCount();
 
-int* Scenario(BWAPI::GameWrapper& Broodwar, UnitCount& myUnits, std::list<Squad*>& mySquads){
+void Scenario(BWAPI::GameWrapper& Broodwar, std::list<Squad*>& mySquads){
     countUnits(Broodwar, mySquads);
-	return nullptr;
+
+    if ((*myUnits).unitOwned[BWAPI::UnitTypes::Zerg_Lurker] + (*myUnits).unitMorphing[BWAPI::UnitTypes::Zerg_Lurker] >= 2) {
+        (*myUnits).unitWanted[BWAPI::UnitTypes::Zerg_Drone] = 30;
+        (*myUnits).unitWanted[BWAPI::UnitTypes::Zerg_Zergling] = 50;
+        (*myUnits).unitWanted[BWAPI::UnitTypes::Zerg_Hydralisk] = 20;
+
+        ArmySquad* Army = static_cast<ArmySquad*>(getSquad(2, 2, mySquads));
+        (*Army).unitWanted[BWAPI::UnitTypes::Zerg_Zergling] = 50;
+        (*Army).unitWanted[BWAPI::UnitTypes::Zerg_Hydralisk] = 20;
+    }
 }
 
 
@@ -113,7 +122,7 @@ void nextLarvaMorph(BWAPI::GameWrapper& Broodwar) {
     }
 
     else {
-        (*myUnits).nextUnitFromLarva = BWAPI::UnitTypes::Unknown;
+        (*myUnits).nextUnitFromLarva = BWAPI::UnitTypes::Zerg_Zergling;
     }
 }
 
@@ -145,7 +154,7 @@ UnitCount::UnitCount(){
 
     std::memset(unitWanted, 0, 4*int(BWAPI::UnitTypes::Unknown));
     unitWanted[BWAPI::UnitTypes::Zerg_Drone] = 15;
-    unitWanted[BWAPI::UnitTypes::Zerg_Zergling] = 20;
+    unitWanted[BWAPI::UnitTypes::Zerg_Zergling] = 10;
     unitWanted[BWAPI::UnitTypes::Zerg_Hydralisk] = 10;
-    unitWanted[BWAPI::UnitTypes::Zerg_Lurker] = 1;
+    unitWanted[BWAPI::UnitTypes::Zerg_Lurker] = 4;
 }

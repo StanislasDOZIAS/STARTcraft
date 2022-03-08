@@ -102,7 +102,7 @@ void StarterBot::onFrame()
     //int* Actions = Scenario(BWAPI::Broodwar, myUnits, this);
 
     // Count our units
-    countUnits(BWAPI::Broodwar, mySquads);
+    Scenario(BWAPI::Broodwar, mySquads);
 
     nextLarvaMorph(BWAPI::Broodwar);
 

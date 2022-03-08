@@ -62,7 +62,7 @@ struct UnitCount {
 
 extern UnitCount* myUnits;
 
-int* Scenario(BWAPI::GameWrapper& Broodwar, std::list<Squad*>& mySquads);
+void Scenario(BWAPI::GameWrapper& Broodwar, std::list<Squad*>& mySquads);
 
 void countUnits(BWAPI::GameWrapper& Broodwar, std::list<Squad*>& mySquads);
 
