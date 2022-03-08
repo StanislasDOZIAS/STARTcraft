@@ -8,11 +8,14 @@ class Squad;
 
 // on regroupe tous les compteurs d'unités dans une structure pour faciltier l'échange d'information
 struct UnitCount {
-    // Track the Buildings
-    // 0 : The building isn't here
+    // All the unit we owne (unit and buildings)
+    int unitOwned[int(BWAPI::UnitTypes::Unknown)];
+
+
+    // Track the Buildings construction
+    // 0 : No plan for this building
     // 1 : The building is going to start
     // 2 : The building is constructing
-    // 3 : The builindg is constructed
     int unitBuilding[BWAPI::UnitTypes::Unknown];
 
     int number_Hatchery;
@@ -27,10 +30,7 @@ struct UnitCount {
     int unitWanted[int(BWAPI::UnitTypes::Unknown)];
 
 
-
-    // The Combat Units we owne
-
-    int unitOwned[int(BWAPI::UnitTypes::Unknown)];
+    // The Combat Units
 
     int unitMorphing[int(BWAPI::UnitTypes::Unknown)];
 

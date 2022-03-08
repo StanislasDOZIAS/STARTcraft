@@ -153,25 +153,6 @@ void StarterBot::drawDebugInformation()
 void StarterBot::onUnitDestroy(BWAPI::Unit unit)
 {
 
-    // Buildings
-    if (unit->getType().isBuilding()) {
-        (*myUnits).unitBuilding[unit->getType()] = 0;
-    }
-
-
-    if (unit->getType() == BWAPI::UnitTypes::Zerg_Lair) {
-        (*myUnits).number_Hatchery -= 1;
-    }
-
-    if (unit->getType() == BWAPI::UnitTypes::Zerg_Hatchery) {
-        (*myUnits).number_Hatchery -= 1;
-    }
-
-    if (unit->getType() == BWAPI::UnitTypes::Zerg_Hive) {
-        (*myUnits).number_Hatchery -= 1;
-    }
-
-
     //BWEM
     try
     {
@@ -212,6 +193,10 @@ void StarterBot::onUnitCreate(BWAPI::Unit unit)
 // Called whenever a unit finished construction, with a pointer to the unit
 void StarterBot::onUnitComplete(BWAPI::Unit unit)
 {
+    if ((unit->getPlayer() == BWAPI::Broodwar->self()) && (unit->getType().isBuilding())) {
+        std::cout << "finished building : " << unit->getType()<< std::endl;
+        (*myUnits).unitBuilding[unit->getType()] = 0;
+    }
     if ( (unit->getPlayer() == BWAPI::Broodwar->self()) && ((unit->getType() == BWAPI::UnitTypes::Zerg_Overlord)|| (unit->getType() == BWAPI::UnitTypes::Zerg_Drone)) ) {
         BWAPI::Unit closestMineral = Tools::GetClosestUnitTo(unit, BWAPI::Broodwar->getMinerals());
 
