@@ -123,13 +123,7 @@ void StarterBot::onFrame()
     Actions::Economy(mySquads);
 
     // Manage the army
-    int armyWanted[int(BWAPI::UnitTypes::Unknown)];
-    for (int unittype = 0; unittype < BWAPI::UnitTypes::Unknown; ++unittype) {
-        if (unittype != BWAPI::UnitTypes::Zerg_Drone) {
-            armyWanted[unittype] = (*myUnits).unitWanted[unittype];
-        }
-    }
-    Actions::baseArmy(mySquads, armyWanted);
+    Actions::baseArmy(mySquads, (*myUnits).unitWanted);
 
     (*myUnits).building_frame_count += 1;
     /*
@@ -152,7 +146,20 @@ void StarterBot::drawDebugInformation()
 // Called whenever a unit is destroyed, with a pointer to the unit
 void StarterBot::onUnitDestroy(BWAPI::Unit unit)
 {
+    if ((*myUnits).first_extractor != nullptr && unit->getID() == (*myUnits).first_extractor->getID()) {
+        (*myUnits).first_extractor = nullptr;
+    }
+    if ((*myUnits).second_extractor != nullptr && unit->getID() == (*myUnits).second_extractor->getID()) {
+        (*myUnits).second_extractor = nullptr;
+    }
 
+    if ((*myUnits).secondBase != nullptr && unit->getID() == (*myUnits).secondBase->getID()) {
+        (*myUnits).secondBase = nullptr;
+    }
+
+    if (unit->getType().isBuilding() && unit->isBeingConstructed()) {
+        (*myUnits).unitBuilding[unit->getType()] = 0;
+    }
     //BWEM
     try
     {
@@ -171,12 +178,6 @@ void StarterBot::onUnitDestroy(BWAPI::Unit unit)
 void StarterBot::onUnitMorph(BWAPI::Unit unit)
 {
 
-    if ((*myUnits).first_extractor != nullptr && unit->getID() == (*myUnits).first_extractor->getID()) {
-        (*myUnits).first_extractor = nullptr;
-    }
-    if ((*myUnits).second_extractor != nullptr && unit->getID() == (*myUnits).second_extractor->getID()) {
-        (*myUnits).second_extractor = nullptr;
-    }
 }
 
 // Called whenever a text is sent to the game by a user
@@ -210,6 +211,14 @@ void StarterBot::onUnitComplete(BWAPI::Unit unit)
             if (unit->getDistance(static_cast <BWAPI::Position>(BWAPI::Broodwar->self()->getStartLocation())) > unit->getDistance(static_cast <BWAPI::Position>((*myUnits).secondBasePos)) &&
                 (*myUnits).second_extractor == nullptr) {
                 (*myUnits).second_extractor = unit;
+            }
+        }
+        if (unit->getType() == BWAPI::UnitTypes::Zerg_Hatchery) {
+            std::cout << unit->getDistance(static_cast <BWAPI::Position>((*myUnits).secondBasePos));
+            if (unit->getDistance(static_cast <BWAPI::Position>((*myUnits).secondBasePos)) < 100 &&
+                (*myUnits).secondBase == nullptr) {
+                (*myUnits).secondBaseBuilder = nullptr;
+                (*myUnits).secondBase = unit;
             }
         }
     }

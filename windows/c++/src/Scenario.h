@@ -56,6 +56,7 @@ struct UnitCount {
     BWAPI::TilePosition secondBasePos;
     bool foundSecondBasePos;
     BWAPI::Unit secondBaseBuilder;
+    BWAPI::Unit secondBase;
 
     BWAPI::Unit first_extractor;
     BWAPI::Unit second_extractor;

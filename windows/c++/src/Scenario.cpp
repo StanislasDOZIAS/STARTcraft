@@ -97,7 +97,14 @@ void countUnits(BWAPI::GameWrapper& Broodwar, std::list<Squad*>& mySquads)
 }
 
 void nextLarvaMorph(BWAPI::GameWrapper& Broodwar) {
-    if ((*myUnits).unitOwned[int(BWAPI::UnitTypes::Zerg_Drone)] + (*myUnits).unitMorphing[int(BWAPI::UnitTypes::Zerg_Drone)] < (*myUnits).unitWanted[int(BWAPI::UnitTypes::Zerg_Drone)]) {
+
+    if (((*myUnits).unitOwned[int(BWAPI::UnitTypes::Zerg_Spawning_Pool)] >= 1) && 
+        ((*myUnits).unitOwned[int(BWAPI::UnitTypes::Zerg_Zergling)] + 2 * (*myUnits).unitMorphing[int(BWAPI::UnitTypes::Zerg_Zergling)] < (*myUnits).unitWanted[int(BWAPI::UnitTypes::Zerg_Zergling)]) &&
+        ((*myUnits).unitWanted[int(BWAPI::UnitTypes::Zerg_Drone)] < 30) && ((*myUnits).unitOwned[int(BWAPI::UnitTypes::Zerg_Drone)] >= 5)) {
+        (*myUnits).nextUnitFromLarva = BWAPI::UnitTypes::Zerg_Zergling;
+    }
+    
+    else if ((*myUnits).unitOwned[int(BWAPI::UnitTypes::Zerg_Drone)] + (*myUnits).unitMorphing[int(BWAPI::UnitTypes::Zerg_Drone)] < (*myUnits).unitWanted[int(BWAPI::UnitTypes::Zerg_Drone)]) {
         (*myUnits).nextUnitFromLarva = BWAPI::UnitTypes::Zerg_Drone;
     }
 
@@ -112,7 +119,7 @@ void nextLarvaMorph(BWAPI::GameWrapper& Broodwar) {
     }
 
     else {
-        if ((*myUnits).unitWanted[BWAPI::UnitTypes::Zerg_Drone] <= 20) {
+        if ((*myUnits).unitWanted[BWAPI::UnitTypes::Zerg_Drone] < 30) {
             (*myUnits).nextUnitFromLarva = BWAPI::UnitTypes::Zerg_Drone;
         }
         else {
@@ -144,6 +151,8 @@ UnitCount::UnitCount(){
 
     first_extractor = nullptr;
     second_extractor = nullptr;
+    secondBase = nullptr;
+
 
     std::memset(unitBuilding, 0, 4*int(BWAPI::UnitTypes::Unknown));
     std::memset(unitOwned, 0, 4*int(BWAPI::UnitTypes::Unknown));

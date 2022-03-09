@@ -48,9 +48,7 @@ void Squad::move(BWAPI::Position position){
 
 void Squad::attack(BWAPI::Position target) {
 
-	double slower = 10000;
 	BWAPI::UnitType slowType = BWAPI::UnitTypes::Zerg_Hydralisk;
-	double temp = 0;
 	int min_range = 10000;
 	BWAPI::Unit nearest_slow_unit = nullptr;
 	for (BWAPI::Unit u : Units) {
@@ -110,7 +108,7 @@ void Squad::attack(BWAPI::Position target) {
 			else if (unit->getType() == BWAPI::UnitTypes::Zerg_Overlord) {
 				unit->move(nearest_slow_unit->getPosition(), false);
 			}
-			else if (unit->getType() != slowType) {
+			else if (unit->getType() != slowType && unit->canAttack()) {
 				unit->attack(nearest_slow_unit->getPosition(), false);
 			}
 			else {
@@ -185,5 +183,6 @@ ArmySquad::ArmySquad(int* armyWanted) {
 	for (int unittype = 0; unittype < BWAPI::UnitTypes::Unknown; ++unittype) {
 		unitWanted[unittype] = armyWanted[unittype];
 	}
+	unitWanted[int(BWAPI::UnitTypes::Zerg_Drone)] = 0;
 	unitWanted[int(BWAPI::UnitTypes::Zerg_Overlord)] = 1;
 }
