@@ -13,8 +13,6 @@ extern UnitCount* myUnits;
 class Squad;
 
 namespace Actions {
-	void buildAdditionalSupply();
-
 	void morphFromLarva();
 
 	void Economy(std::list<Squad*>& mySquads);
@@ -23,10 +21,12 @@ namespace Actions {
 
 	void buildTechTree(std::list<Squad*>& mySquads);
 
-	void baseArmy(std::list<Squad*>& mySquads, int* armyWanted);
+	void baseArmy(std::list<Squad*>& mySquads);
 }
 
-bool unitInSquad(BWAPI::Unit unit, std::list<Squad*>& mySquads);
+void buildAdditionalSupply();
+
+void enlistUnit(Squad* squad, std::list<Squad*>& mySquads);
 
 int transfer_squadType(Squad* origin_Squad, Squad* destination_Squad, BWAPI::UnitType Type, int number);
 
@@ -35,11 +35,3 @@ void transfer_squad(Squad* origin_Squad, Squad* destination_Squad, BWAPI::Unit u
 Squad* getSquadUnit(BWAPI::Unit unit, std::list<Squad*>& mySquads);
 
 Squad* getSquad(int Squad_type, int ActionId, std::list<Squad*>& mySquads);
-
-void enlistUnit(Squad* squad, std::list<Squad*>& mySquads);
-
-bool attackEnnemie(Squad* squad, bool alreadyAttacking);
-
-void DefendB2(Squad* squad);
-
-void morphLurker(Squad* squad);

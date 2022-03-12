@@ -70,4 +70,6 @@ void Scenario(BWAPI::GameWrapper& Broodwar, std::list<Squad*>& mySquads);
 
 void countUnits(BWAPI::GameWrapper& Broodwar, std::list<Squad*>& mySquads);
 
+void changeUnitWanted(BWAPI::GameWrapper& Broodwar, std::list<Squad*>& mySquads);
+
 void nextLarvaMorph(BWAPI::GameWrapper& Broodwar);

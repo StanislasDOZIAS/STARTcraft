@@ -47,7 +47,7 @@ void StarterBot::onStart()
     int second_dist = INT_MAX;
     BWAPI::TilePosition secondBasePos;
     BWAPI::TilePosition clothestBasePos;
-    (*myUnits).foundSecondBasePos = false;
+    myUnits->foundSecondBasePos = false;
     for (auto& area : theMap.Areas()) {
         for (auto& base : area.Bases()) {
             if (!base.Starting()) {
@@ -57,20 +57,20 @@ void StarterBot::onStart()
                     secondBasePos = clothestBasePos;
                     min_dist = current_dist;
                     clothestBasePos = base.Location();
-                    (*myUnits).foundSecondBasePos = true;
+                    myUnits->foundSecondBasePos = true;
                 }
                 else if (current_dist < second_dist) {
                     second_dist = current_dist;
                     secondBasePos = base.Location();
-                    (*myUnits).foundSecondBasePos = true;
+                    myUnits->foundSecondBasePos = true;
                 }
             }
 
         }
     }
 
-    if ((*myUnits).foundSecondBasePos) {
-        (*myUnits).secondBasePos = secondBasePos;
+    if (myUnits->foundSecondBasePos) {
+        myUnits->secondBasePos = secondBasePos;
     }
     else {
         std::cout << "Second Base not found" << std::endl;
@@ -99,21 +99,14 @@ void StarterBot::onFrame()
     // Draw some relevent information to the screen to help us debug the bot
     drawDebugInformation();
 
-    //int* Actions = Scenario(BWAPI::Broodwar, myUnits, this);
 
-    // Count our units
+    // Ask Scenario what we have to do
     Scenario(BWAPI::Broodwar, mySquads);
 
-    nextLarvaMorph(BWAPI::Broodwar);
-
-    // Build Supplies
-    Actions::buildAdditionalSupply();
-
-   // Use Larva
+    // Use Larva
     Actions::morphFromLarva();
 
     // Build More Hatch
-
     Actions::buildHatchery(mySquads);
 
     // Advance in the tech tree
@@ -123,9 +116,9 @@ void StarterBot::onFrame()
     Actions::Economy(mySquads);
 
     // Manage the army
-    Actions::baseArmy(mySquads, (*myUnits).unitWanted);
+    Actions::baseArmy(mySquads);
 
-    (*myUnits).building_frame_count += 1;
+    myUnits->building_frame_count += 1;
     /*
     std::cout << "Squad List : ";
     for (Squad* squad : mySquads) {
@@ -146,20 +139,22 @@ void StarterBot::drawDebugInformation()
 // Called whenever a unit is destroyed, with a pointer to the unit
 void StarterBot::onUnitDestroy(BWAPI::Unit unit)
 {
-    if ((*myUnits).first_extractor != nullptr && unit->getID() == (*myUnits).first_extractor->getID()) {
-        (*myUnits).first_extractor = nullptr;
+    //Manage the extractor and the second base
+    if (myUnits->first_extractor != nullptr && unit->getID() == myUnits->first_extractor->getID()) {
+        myUnits->first_extractor = nullptr;
     }
-    if ((*myUnits).second_extractor != nullptr && unit->getID() == (*myUnits).second_extractor->getID()) {
-        (*myUnits).second_extractor = nullptr;
+    if (myUnits->second_extractor != nullptr && unit->getID() == myUnits->second_extractor->getID()) {
+        myUnits->second_extractor = nullptr;
     }
 
-    if ((*myUnits).secondBase != nullptr && unit->getID() == (*myUnits).secondBase->getID()) {
-        (*myUnits).secondBase = nullptr;
+    if (myUnits->secondBase != nullptr && unit->getID() == myUnits->secondBase->getID()) {
+        myUnits->secondBase = nullptr;
     }
 
     if (unit->getType().isBuilding() && unit->isBeingConstructed()) {
-        (*myUnits).unitBuilding[unit->getType()] = 0;
+        myUnits->unitBuilding[unit->getType()] = 0;
     }
+
     //BWEM
     try
     {
@@ -202,27 +197,30 @@ void StarterBot::onUnitComplete(BWAPI::Unit unit)
 {
     if ((unit->getPlayer() == BWAPI::Broodwar->self()) && (unit->getType().isBuilding())) {
         std::cout << "finished building : " << unit->getType()<< std::endl;
-        (*myUnits).unitBuilding[unit->getType()] = 0;
+        myUnits->unitBuilding[unit->getType()] = 0;
+
+        //Manage the extractor and the second base
         if (unit->getType() == BWAPI::UnitTypes::Zerg_Extractor) {
-            if (unit->getDistance(static_cast <BWAPI::Position>(BWAPI::Broodwar->self()->getStartLocation())) < unit->getDistance(static_cast <BWAPI::Position>((*myUnits).secondBasePos)) &&
-                (*myUnits).first_extractor == nullptr) {
-                (*myUnits).first_extractor = unit;
+            if (unit->getDistance(static_cast <BWAPI::Position>(BWAPI::Broodwar->self()->getStartLocation())) < unit->getDistance(static_cast <BWAPI::Position>(myUnits->secondBasePos)) &&
+                myUnits->first_extractor == nullptr) {
+                myUnits->first_extractor = unit;
             }
-            if (unit->getDistance(static_cast <BWAPI::Position>(BWAPI::Broodwar->self()->getStartLocation())) > unit->getDistance(static_cast <BWAPI::Position>((*myUnits).secondBasePos)) &&
-                (*myUnits).second_extractor == nullptr) {
-                (*myUnits).second_extractor = unit;
+            if (unit->getDistance(static_cast <BWAPI::Position>(BWAPI::Broodwar->self()->getStartLocation())) > unit->getDistance(static_cast <BWAPI::Position>(myUnits->secondBasePos)) &&
+                myUnits->second_extractor == nullptr) {
+                myUnits->second_extractor = unit;
             }
         }
         if (unit->getType() == BWAPI::UnitTypes::Zerg_Hatchery) {
-            std::cout << unit->getDistance(static_cast <BWAPI::Position>((*myUnits).secondBasePos));
-            if (unit->getDistance(static_cast <BWAPI::Position>((*myUnits).secondBasePos)) < 100 &&
-                (*myUnits).secondBase == nullptr) {
-                (*myUnits).secondBaseBuilder = nullptr;
-                (*myUnits).secondBase = unit;
+            std::cout << unit->getDistance(static_cast <BWAPI::Position>(myUnits->secondBasePos));
+            if (unit->getDistance(static_cast <BWAPI::Position>(myUnits->secondBasePos)) < 100 &&
+                myUnits->secondBase == nullptr) {
+                myUnits->secondBaseBuilder = nullptr;
+                myUnits->secondBase = unit;
             }
         }
     }
-
+    
+    // By default a worker gather mineral (sometimes a worker isn't assign to the blank squad)
     if ( (unit->getPlayer() == BWAPI::Broodwar->self()) && ((unit->getType() == BWAPI::UnitTypes::Zerg_Overlord)|| (unit->getType() == BWAPI::UnitTypes::Zerg_Drone)) ) {
         BWAPI::Unit closestMineral = Tools::GetClosestUnitTo(unit, BWAPI::Broodwar->getMinerals());
 

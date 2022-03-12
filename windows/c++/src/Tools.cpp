@@ -1,5 +1,9 @@
 #include "Tools.h"
 
+// Some functions were already implemented, other were updated and some were added
+
+// Names are enough explicit to explain what they do
+
 BWAPI::Unit Tools::GetClosestUnitTo(BWAPI::Position p, const BWAPI::Unitset& units)
 {
     BWAPI::Unit closestUnit = nullptr;
@@ -56,7 +60,6 @@ int Tools::CountUnitsOfType(BWAPI::UnitType type, const BWAPI::Unitset& units)
     return sum;
 }
 
-
 BWAPI::Unit Tools::GetUnitOfType(BWAPI::UnitType type)
 {
     // For each unit that we own
@@ -89,14 +92,12 @@ BWAPI::Unit Tools::GetCompleteUnitOfType(BWAPI::UnitType type)
     return nullptr;
 }
 
-
 BWAPI::Unit Tools::GetDepot()
 {
     const BWAPI::UnitType depot = BWAPI::Broodwar->self()->getRace().getResourceDepot();
     return GetUnitOfType(depot);
 }
 
-// Attempt tp construct a building of a given type 
 bool Tools::BuildBuilding(BWAPI::UnitType type)
 {
     // Get the type of unit that is required to build the desired building

@@ -13,18 +13,23 @@ class Squad{
 public:
 	Squad();
 	Squad(int Squad_type);
+
+	std::vector<BWAPI::Unit>& get_Units();
 	int get_type();
 	int get_Action();
+	void changeAction(int ActionId);
 
 	void add_Unit(BWAPI::Unit Unit);
 	BWAPI::Unit Squad::remove_UnitType(BWAPI::UnitType Type);
 	void Squad::remove_Unit(BWAPI::Unit unit);
+	void countSquadUnits();
+
 	void move(BWAPI::Position postion);
+	bool decideAttack(bool alreadyAttacking);
 	void attack(BWAPI::Position target);
 	void unlimitedUnitWanted();
-	void changeAction(int ActionId);
-	std::vector<BWAPI::Unit>& get_Units();
-	void countSquadUnits();
+	void Defend();
+	void morphLurker();
 
 	int type;
 	int Action;

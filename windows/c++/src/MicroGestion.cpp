@@ -1,7 +1,11 @@
 #include "MicroGestion.h"
 
+// Build a building at the wanted position with the given builder (if none given, choose a builder in the mineral gatherers)
 bool MicroGestion::buildBuilding(BWAPI::UnitType building, BWAPI::TilePosition desiredPos, std::list<Squad*>& mySquads, BWAPI::Unit builder){
     
+    if (myUnits->builder != nullptr) {
+        return false;
+    }
 
     if (builder == nullptr) {
         builder = getBuilder(mySquads);
@@ -15,12 +19,12 @@ bool MicroGestion::buildBuilding(BWAPI::UnitType building, BWAPI::TilePosition d
     BWAPI::TilePosition buildPos = BWAPI::Broodwar->getBuildLocation(building, desiredPos, maxBuildRange, buildOnCreep);
 
     if (builder->build(building, buildPos)) {
-        (*myUnits).builder = builder;
-        (*myUnits).unitBuilding[building] = 1;
-        (*myUnits).blocked_minerals += building.mineralPrice();
-        (*myUnits).blocked_gas += building.gasPrice();
-        (*myUnits).building_frame_count = 0;
-        (*myUnits).building_in_progress = building;
+        myUnits->builder = builder;
+        myUnits->unitBuilding[building] = 1;
+        myUnits->blocked_minerals += building.mineralPrice();
+        myUnits->blocked_gas += building.gasPrice();
+        myUnits->building_frame_count = 0;
+        myUnits->building_in_progress = building;
         std::cout << "building : " << building << std::endl;
         return true;
     }
@@ -29,6 +33,7 @@ bool MicroGestion::buildBuilding(BWAPI::UnitType building, BWAPI::TilePosition d
     }
 }
 
+// Choose a builder in the mineral gatherers
 BWAPI::Unit MicroGestion::getBuilder(std::list<Squad*>& mySquads) {
     BWAPI::Unit builder = nullptr;
 
@@ -41,6 +46,7 @@ BWAPI::Unit MicroGestion::getBuilder(std::list<Squad*>& mySquads) {
     return builder;
 }
 
+// Detect if an ennemy is close to a unit
 bool MicroGestion::detectEnnemieClose(BWAPI::Unit unit) {
     int rangeDetection;
     if (unit->getType()==BWAPI::UnitTypes::Zerg_Lurker){
