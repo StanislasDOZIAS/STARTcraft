@@ -211,7 +211,6 @@ void StarterBot::onUnitComplete(BWAPI::Unit unit)
             }
         }
         if (unit->getType() == BWAPI::UnitTypes::Zerg_Hatchery) {
-            std::cout << unit->getDistance(static_cast <BWAPI::Position>(myUnits->secondBasePos));
             if (unit->getDistance(static_cast <BWAPI::Position>(myUnits->secondBasePos)) < 100 &&
                 myUnits->secondBase == nullptr) {
                 myUnits->secondBaseBuilder = nullptr;
